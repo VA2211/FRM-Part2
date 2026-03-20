@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FRM Part 2 · Study Hub 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--pink:#FF4E91;--orange:#FF6B35;--teal:#00C9A7;--blue:#5B8CFF;--yellow:#FFD700;--purple:#A259FF;--navy:#1B1464;--bg:#FFF9EC;--black:#000;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;}
+header{background:var(--navy);border-bottom:4px solid var(--black);padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:48px;height:48px;background:var(--yellow);border:3px solid var(--black);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:3px 3px 0 var(--black);}
+.logo-title{font-family:'Fredoka One',sans-serif;font-size:22px;color:var(--yellow);}
+.logo-sub{font-size:12px;color:rgba(255,255,255,.65);margin-top:1px;}
+.hbadges{display:flex;gap:6px;flex-wrap:wrap;}
+.hbadge{font-family:'Fredoka One',sans-serif;font-size:11px;padding:4px 12px;border-radius:50px;border:2.5px solid var(--black);box-shadow:2px 2px 0 var(--black);}
+.hero{text-align:center;padding:2rem 1rem 1.25rem;}
+.hero-title{font-family:'Fredoka One',sans-serif;font-size:30px;color:var(--navy);margin-bottom:6px;}
+.hero-title span{color:var(--pink);}
+.hero-sub{font-size:14px;font-weight:700;color:#666;margin-bottom:1.25rem;}
+.hero-stats{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.stat-pill{font-family:'Fredoka One',sans-serif;font-size:12px;padding:5px 14px;border-radius:50px;border:2.5px solid var(--black);box-shadow:2px 2px 0 var(--black);color:#fff;}
+.filter-bar{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;padding:0 1rem 1.25rem;}
+.filter-btn{font-family:'Fredoka One',sans-serif;font-size:13px;padding:5px 15px;border-radius:50px;border:2.5px solid var(--black);cursor:pointer;background:#fff;color:var(--navy);box-shadow:2px 2px 0 var(--black);transition:transform .1s;}
+.filter-btn:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--black);}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;padding:0 1.25rem 2rem;max-width:1300px;margin:0 auto;}
+.subject-card{border:3px solid var(--black);border-radius:18px;box-shadow:5px 5px 0 var(--black);overflow:hidden;transition:transform .15s,box-shadow .15s;}
+.subject-card:hover{transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--black);}
+.card-header{padding:.9rem 1.1rem;border-bottom:3px solid var(--black);display:flex;align-items:center;gap:10px;}
+.card-icon{width:42px;height:42px;border-radius:10px;border:2.5px solid var(--black);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;box-shadow:2px 2px 0 var(--black);}
+.card-code{font-family:'Fredoka One',sans-serif;font-size:10px;padding:2px 9px;border-radius:50px;border:2px solid var(--black);display:inline-block;margin-bottom:3px;}
+.card-title{font-family:'Fredoka One',sans-serif;font-size:15px;color:var(--navy);line-height:1.2;}
+.card-body{background:#fff;padding:.9rem 1.1rem;}
+.ch-list{display:flex;flex-direction:column;gap:5px;}
+.ch-row{display:flex;align-items:center;gap:7px;padding:6px 9px;border-radius:9px;border:2px solid var(--black);background:var(--bg);transition:transform .1s;}
+.ch-row:hover{transform:translateX(3px);}
+.ch-num{font-family:'Fredoka One',sans-serif;font-size:11px;min-width:30px;height:24px;border-radius:7px;border:2px solid var(--black);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ch-name{font-size:12px;font-weight:700;color:var(--navy);flex:1;line-height:1.35;}
+.ch-links{display:flex;gap:4px;flex-shrink:0;}
+.ch-link{font-family:'Fredoka One',sans-serif;font-size:10px;padding:3px 9px;border-radius:50px;border:2px solid var(--black);text-decoration:none;box-shadow:2px 2px 0 var(--black);transition:transform .1s;white-space:nowrap;display:inline-block;}
+.ch-link:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--black);}
+footer{background:var(--navy);border-top:4px solid var(--black);padding:1rem;text-align:center;font-family:'Fredoka One',sans-serif;font-size:13px;color:rgba(255,255,255,.55);}
+footer span{color:var(--yellow);}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="logo-icon">📊</div>
+    <div><div class="logo-title">FRM Part 2</div><div class="logo-sub">2026 · Study Hub · QB + Concepts</div></div>
+  </div>
+  <div class="hbadges">
+    <span class="hbadge" style="background:var(--pink);color:#fff;">CR · 23</span>
+    <span class="hbadge" style="background:var(--blue);color:#fff;">MR · 16</span>
+    <span class="hbadge" style="background:var(--teal);color:#fff;">LR · 19</span>
+    <span class="hbadge" style="background:var(--orange);color:#fff;">OR · 24</span>
+    <span class="hbadge" style="background:var(--purple);color:#fff;">RMIM · 11</span>
+    <span class="hbadge" style="background:var(--yellow);color:var(--navy);">CI · 10</span>
+  </div>
+</header>
+<div class="hero">
+  <div class="hero-title">FRM Part 2 · <span>2026 Command Centre</span></div>
+  <div class="hero-sub">103 readings · 6 subjects · Question Banks + Concept Notes</div>
+  <div class="hero-stats">
+    <span class="stat-pill" style="background:var(--pink);">CR · 23</span>
+    <span class="stat-pill" style="background:var(--blue);">MR · 16</span>
+    <span class="stat-pill" style="background:var(--teal);">LR · 19</span>
+    <span class="stat-pill" style="background:var(--orange);">OR · 24</span>
+    <span class="stat-pill" style="background:var(--purple);">RMIM · 11</span>
+    <span class="stat-pill" style="background:var(--yellow);color:var(--navy);">CI · 10</span>
+  </div>
+</div>
+<div class="filter-bar">
+  <button class="filter-btn" style="background:var(--navy);color:#FFD700;" onclick="filterCards('all',this)">All</button>
+  <button class="filter-btn" onclick="filterCards('CR',this)">CR</button>
+  <button class="filter-btn" onclick="filterCards('MR',this)">MR</button>
+  <button class="filter-btn" onclick="filterCards('LR',this)">LR</button>
+  <button class="filter-btn" onclick="filterCards('OR',this)">OR</button>
+  <button class="filter-btn" onclick="filterCards('RMIM',this)">RMIM</button>
+  <button class="filter-btn" onclick="filterCards('CI',this)">CI</button>
+</div>
+<div class="grid" id="main-grid">
+<div class="subject-card" data-subject="CR">
+  <div class="card-header" style="background:#FFE0EF;">
+    <div class="card-icon" style="background:var(--pink);color:#fff;">💳</div>
+    <div><span class="card-code" style="background:var(--pink);color:#fff;">CR</span><div class="card-title">Credit Risk Measurement & Management</div></div>
+  </div>
+  <div class="card-body"><div class="ch-list" id="cr-list"></div></div>
+</div>
+<div class="subject-card" data-subject="MR">
+  <div class="card-header" style="background:#DDE8FF;">
+    <div class="card-icon" style="background:var(--blue);color:#fff;">📈</div>
+    <div><span class="card-code" style="background:var(--blue);color:#fff;">MR</span><div class="card-title">Market Risk Measurement & Management</div></div>
+  </div>
+  <div class="card-body"><div class="ch-list" id="mr-list"></div></div>
+</div>
+<div class="subject-card" data-subject="LR">
+  <div class="card-header" style="background:#D6FAF4;">
+    <div class="card-icon" style="background:var(--teal);color:#fff;">💧</div>
+    <div><span class="card-code" style="background:var(--teal);color:#fff;">LR</span><div class="card-title">Liquidity and Treasury Risk Management</div></div>
+  </div>
+  <div class="card-body"><div class="ch-list" id="lr-list"></div></div>
+</div>
+<div class="subject-card" data-subject="OR">
+  <div class="card-header" style="background:#FFE9DE;">
+    <div class="card-icon" style="background:var(--orange);color:#fff;">⚙️</div>
+    <div><span class="card-code" style="background:var(--orange);color:#fff;">OR</span><div class="card-title">Operational Risk and Resilience</div></div>
+  </div>
+  <div class="card-body"><div class="ch-list" id="or-list"></div></div>
+</div>
+<div class="subject-card" data-subject="RMIM">
+  <div class="card-header" style="background:#EFE0FF;">
+    <div class="card-icon" style="background:var(--purple);color:#fff;">🏦</div>
+    <div><span class="card-code" style="background:var(--purple);color:#fff;">RMIM</span><div class="card-title">Risk Management & Investment Management</div></div>
+  </div>
+  <div class="card-body"><div class="ch-list" id="rmim-list"></div></div>
+</div>
+<div class="subject-card" data-subject="CI">
+  <div class="card-header" style="background:#FFF8CC;">
+    <div class="card-icon" style="background:var(--yellow);color:var(--navy);">🌐</div>
+    <div><span class="card-code" style="background:var(--yellow);color:var(--navy);">CI</span><div class="card-title">Current Issues in Financial Markets</div></div>
+  </div>
+  <div class="card-body"><div class="ch-list" id="ci-list"></div></div>
+</div>
+</div>
+<footer>Built for <span>FRM Part 2 · 2026</span> · Official GARP curriculum · 103 readings across 6 subjects</footer>
+
+<script>
+const BASE = 'https://va2211.github.io/FRM-Part2/';
+
+const DATA = {
+  cr:{color:'var(--pink)',bg:'#FFE0EF',tc:'var(--pink)',listId:'cr-list',sub:'CR',chapters:[
+    'Fundamentals of Credit Risk','Governance','Credit Risk Management',
+    'Capital Structure in Banks','Introduction to Credit Risk Modeling and Assessment',
+    'Credit Scoring and Rating','Credit Scoring and Retail Credit Risk Management',
+    'Country Risk: Determinants, Measures, and Implications','Estimating Default Probabilities',
+    'Credit Value at Risk','Portfolio Credit Risk','Credit Risk (Hull)','Credit Derivatives',
+    'Derivatives (Gregory)','Counterparty Risk and Beyond','Netting, Close-out and Related Aspects',
+    'Margin (Collateral) and Settlement','Central Clearing','Future Value and Exposure','CVA',
+    'The Evolution of Stress Testing Counterparty Exposures','Structured Credit Risk',
+    'An Introduction to Securitization'
+  ]},
+  mr:{color:'var(--blue)',bg:'#DDE8FF',tc:'var(--blue)',listId:'mr-list',sub:'MR',chapters:[
+    'Estimating Market Risk Measures: An Introduction and Overview','Non-Parametric Approaches',
+    'Parametric Approaches (II): Extreme Value','Backtesting VaR','VaR Mapping',
+    'Messages from the Academic Literature on Risk Measurement for the Trading Book',
+    'Some Correlation Basics: Properties, Motivation, Terminology',
+    'Empirical Properties of Correlation','Financial Correlation Modeling — Bottom-Up Approaches',
+    'Empirical Approaches to Risk Metrics and Hedging','The Science of Term Structure Models',
+    'The Evolution of Short Rates and the Shape of the Term Structure',
+    'The Art of Term Structure Models: Drift',
+    'The Art of Term Structure Models: Volatility and Distribution',
+    'Volatility Smiles','Fundamental Review of the Trading Book (FRTB)'
+  ]},
+  lr:{color:'var(--teal)',bg:'#D6FAF4',tc:'var(--teal)',listId:'lr-list',sub:'LR',chapters:[
+    'Liquidity Risk','Liquidity and Leverage','Early Warning Indicators',
+    'The Investment Function in Financial-Services Management',
+    'Liquidity and Reserves Management: Strategies and Policies',
+    'Intraday Liquidity Risk Management','Monitoring Liquidity',
+    'The Failure Mechanics of Dealer Banks','Liquidity Stress Testing',
+    'Liquidity Risk Reporting and Stress Testing','Contingency Funding Planning',
+    'Managing and Pricing Deposit Services','Managing Nondeposit Liabilities',
+    'Repurchase Agreements and Financing',
+    'Liquidity Transfer Pricing: A Guide to Better Practice',
+    'The US Dollar Shortage in Global Banking and the International Policy Response',
+    'Covered Interest Parity Lost: Understanding the Cross-Currency Basis',
+    'Risk Management for Changing Interest Rates: ALM and Duration Techniques',
+    'Illiquid Assets'
+  ]},
+  or:{color:'var(--orange)',bg:'#FFE9DE',tc:'var(--orange)',listId:'or-list',sub:'OR',chapters:[
+    'Introduction to Operational Risk and Resilience','Risk Governance','Risk Identification',
+    'Risk Measurement and Assessment','Risk Mitigation','Risk Reporting',
+    'Integrated Risk Management','Cyber-Resilience: Range and Practices',
+    'Case Study: Cyber Threats and Information Security Risks',
+    'Sound Management of Risks Related to Money Laundering and Financing of Terrorism',
+    'Case Study: Financial Crime and Fraud','Guidance on Managing Outsourcing Risk',
+    'Case Study: Third-Party Risk Management',
+    'Case Study: Investor Protection and Compliance Risks in Investment Activities',
+    'Supervisory Guidance on Model Risk Management',
+    'Case Study: Model Risk and Model Validation','Stress Testing Banks',
+    'Risk Capital Attribution and Risk-Adjusted Performance Measurement',
+    'Range of Practices and Issues in Economic Capital Frameworks',
+    'Capital Planning at Large Bank Holding Companies',
+    'Capital Regulation Before the Global Financial Crisis',
+    'Solvency, Liquidity, and Other Regulation After the Global Financial Crisis',
+    'High-Level Summary of Basel III Reforms','Basel III: Finalizing Post-Crisis Reforms'
+  ]},
+  rmim:{color:'var(--purple)',bg:'#EFE0FF',tc:'var(--purple)',listId:'rmim-list',sub:'RMIM',chapters:[
+    'Factor Theory','Factors','Alpha (and the Low-Risk Anomaly)','Portfolio Construction',
+    'Portfolio Risk: Analytical Methods','VaR and Risk Budgeting in Investment Management',
+    'Risk Monitoring and Performance Measurement','Portfolio Performance Evaluation',
+    'Hedge Funds','Performing Due Diligence on Specific Managers and Funds',
+    'Predicting Fraud by Investment Managers'
+  ]},
+  ci:{color:'var(--yellow)',bg:'#FFF8CC',tc:'#7A5A00',listId:'ci-list',sub:'CI',chapters:[
+    "Review of the Federal Reserve's Supervision and Regulation of Silicon Valley Bank",
+    'The Credit Suisse CoCo Wipeout: Facts, Misperceptions, and Lessons for Financial Regulation',
+    'Artificial Intelligence and Bank Supervision',
+    'Financial Risk Management and Explainable, Trustworthy, Responsible AI',
+    'Artificial Intelligence Risk Management Framework',
+    'Climate-Related Risk Drivers and Their Transmission Channels',
+    'Climate-Related Financial Risks – Measurement Methodologies',
+    'Principles for the Effective Management and Supervision of Climate-Related Financial Risks',
+    'The Crypto Ecosystem: Key Elements and Risks',
+    'Digital Resilience and Financial Stability: The Quest for Policy Tools in the Financial Sector'
+  ]}
+};
+
+Object.entries(DATA).forEach(([,sub])=>{
+  const list = document.getElementById(sub.listId);
+  sub.chapters.forEach((name, i)=>{
+    const n = i + 1;
+    const qb    = `${sub.sub}/${sub.sub}_Ch${n}_100Q.html`;
+    const notes = `${sub.sub}/${sub.sub}_Ch${n}_Notes.html`;
+    const row = document.createElement('div');
+    row.className = 'ch-row';
+    row.innerHTML = `
+      <div class="ch-num" style="background:${sub.bg};color:${sub.tc};">${n}</div>
+      <div class="ch-name">${name}</div>
+      <div class="ch-links">
+        <a class="ch-link" style="background:${sub.color};color:#fff;" href="${qb}" target="_blank">QB</a>
+        <a class="ch-link" style="background:${sub.color};color:#fff;" href="${notes}" target="_blank">Notes</a>
+      </div>`;
+    list.appendChild(row);
+  });
+});
+
+function filterCards(sub,btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>{b.style.background='';b.style.color='';});
+  const colors={all:['#1B1464','#FFD700'],CR:['#FF4E91','#fff'],MR:['#5B8CFF','#fff'],LR:['#00C9A7','#fff'],OR:['#FF6B35','#fff'],RMIM:['#A259FF','#fff'],CI:['#E6C200','#1B1464']};
+  btn.style.background=colors[sub][0]; btn.style.color=colors[sub][1];
+  document.querySelectorAll('.subject-card').forEach(c=>{
+    c.style.display=(sub==='all'||c.dataset.subject===sub)?'':'none';
+  });
+}
+</script>
+</body>
+</html>

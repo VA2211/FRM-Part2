@@ -1,0 +1,2487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FRM P2 · CR . 19. QB</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --pink: #FF4E91; --orange: #FF6B35; --teal: #00C9A7;
+  --blue: #5B8CFF; --yellow: #FFD700; --purple: #A259FF;
+  --dark: #1a1a2e; --darker: #12121f; --card: #22223a;
+  --text: #f0f0ff; --muted: #9090b8;
+  --border: 3px solid #000; --shadow: 4px 4px 0px #000; --shadow-lg: 6px 6px 0px #000;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Nunito', sans-serif; background: var(--darker); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+body::before {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background-image: radial-gradient(circle at 20% 20%, #FF4E9115 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, #5B8CFF15 0%, transparent 50%);
+}
+
+/* ── HEADER ── */
+#header {
+  background: var(--dark); border-bottom: var(--border);
+  padding: 12px 20px; position: sticky; top: 0; z-index: 200;
+  box-shadow: 0 4px 0 #000;
+}
+.header-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+#header h1 { font-family:'Fredoka One',cursive; font-size:1.4rem; background:linear-gradient(135deg,var(--pink),var(--orange)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.subtitle { font-size:.7rem; color:var(--muted); font-weight:700; letter-spacing:1px; text-transform:uppercase; }
+.scoreboard { display:flex; gap:8px; align-items:center; flex-shrink:0; }
+.score-pill { background:var(--card); border:var(--border); box-shadow:var(--shadow); border-radius:20px; padding:4px 12px; font-weight:800; font-size:.82rem; }
+.score-pill.correct { color:var(--teal); } .score-pill.wrong { color:var(--pink); } .score-pill.total { color:var(--yellow); }
+
+/* ── CONTROLS BAR ── */
+.controls-bar {
+  display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+}
+.search-wrap { position:relative; flex:1; min-width:200px; }
+.search-wrap svg { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted); pointer-events:none; }
+#search-input {
+  width:100%; background:var(--darker); border:var(--border); border-radius:12px;
+  padding:9px 14px 9px 38px; font-family:'Nunito',sans-serif; font-size:.9rem; font-weight:700;
+  color:var(--text); outline:none; transition:border-color .15s, box-shadow .15s;
+}
+#search-input:focus { border-color:var(--blue); box-shadow:3px 3px 0 var(--blue); }
+#search-input::placeholder { color:var(--muted); }
+
+#topic-select {
+  background:var(--darker); border:var(--border); border-radius:12px;
+  padding:9px 14px; font-family:'Nunito',sans-serif; font-size:.88rem; font-weight:700;
+  color:var(--text); outline:none; cursor:pointer; min-width:180px;
+  transition:border-color .15s;
+}
+#topic-select:focus { border-color:var(--purple); }
+
+#diff-select {
+  background:var(--darker); border:var(--border); border-radius:12px;
+  padding:9px 14px; font-family:'Nunito',sans-serif; font-size:.88rem; font-weight:700;
+  color:var(--text); outline:none; cursor:pointer;
+  transition:border-color .15s;
+}
+
+.clear-btn {
+  background:var(--pink); border:var(--border); box-shadow:var(--shadow); border-radius:12px;
+  padding:9px 16px; font-family:'Fredoka One',cursive; font-size:.85rem; color:#fff; cursor:pointer;
+  white-space:nowrap; transition:transform .1s, box-shadow .1s;
+}
+.clear-btn:hover { transform:translate(-1px,-1px); box-shadow:5px 5px 0 #000; }
+
+/* ── PROGRESS ── */
+#progress-bar-wrap { width:100%; height:8px; background:var(--card); border-bottom:2px solid #000; }
+#progress-bar { height:100%; background:linear-gradient(90deg,var(--pink),var(--orange),var(--yellow)); transition:width .4s; }
+
+/* ── RESULTS COUNT ── */
+#results-info { text-align:center; padding:14px 0 4px; font-family:'Fredoka One',cursive; font-size:.95rem; color:var(--muted); }
+
+/* ── MAIN ── */
+#app { max-width:860px; margin:0 auto; padding:10px 16px 80px; position:relative; z-index:1; }
+
+/* ── QUESTION CARD ── */
+.q-card {
+  background:var(--card); border:var(--border); box-shadow:var(--shadow-lg);
+  border-radius:18px; padding:22px 24px; margin-bottom:20px;
+  animation: fadeUp .25s ease;
+  scroll-margin-top: 200px;
+}
+.q-card.hidden { display:none; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+.q-meta { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
+.badge { font-family:'Fredoka One',cursive; font-size:.68rem; padding:3px 10px; border-radius:20px; border:2px solid #000; box-shadow:2px 2px 0 #000; letter-spacing:.5px; text-transform:uppercase; white-space:nowrap; }
+.badge-num { background:var(--purple); color:#fff; }
+.badge-type { background:var(--blue); color:#fff; }
+.badge-topic { background:var(--orange); color:#fff; font-size:.62rem; }
+.badge-diff-medium { background:var(--yellow); color:#000; }
+.badge-diff-hard { background:var(--pink); color:#fff; }
+.badge-page { background:var(--teal); color:#000; font-size:.6rem; }
+
+.q-text { font-size:1rem; font-weight:700; line-height:1.65; margin-bottom:16px; color:#fff; }
+
+/* ── OPTIONS ── */
+.options { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+.opt-btn { background:var(--darker); border:var(--border); box-shadow:var(--shadow); border-radius:12px; padding:11px 16px; text-align:left; cursor:pointer; font-family:'Nunito',sans-serif; font-size:.9rem; font-weight:700; color:var(--text); transition:transform .12s, box-shadow .12s; display:flex; align-items:flex-start; gap:10px; }
+.opt-btn:hover:not(:disabled) { transform:translate(-2px,-2px); box-shadow:6px 6px 0px #000; }
+.opt-btn:disabled { cursor:default; }
+.opt-btn .opt-letter { font-family:'Fredoka One',cursive; font-size:1rem; min-width:26px; height:26px; display:flex;align-items:center;justify-content:center; background:var(--card); border:2px solid #000; border-radius:7px; flex-shrink:0; }
+.opt-btn.correct-ans { background:#00C9A730; border-color:var(--teal); box-shadow:4px 4px 0 var(--teal); }
+.opt-btn.correct-ans .opt-letter { background:var(--teal); color:#000; }
+.opt-btn.wrong-ans { background:#FF4E9130; border-color:var(--pink); box-shadow:4px 4px 0 var(--pink); }
+.opt-btn.wrong-ans .opt-letter { background:var(--pink); color:#fff; }
+.opt-btn.dimmed { opacity:.4; }
+.opt-label { flex:1; line-height:1.5; }
+
+/* ── TRUE/FALSE ── */
+.tf-row { display:flex; gap:12px; margin-bottom:14px; }
+.tf-btn { flex:1; padding:14px; border:var(--border); box-shadow:var(--shadow); border-radius:12px; font-family:'Fredoka One',cursive; font-size:1.1rem; cursor:pointer; background:var(--darker); color:var(--text); transition:transform .12s, box-shadow .12s; }
+.tf-btn:hover:not(:disabled) { transform:translate(-2px,-2px); box-shadow:6px 6px 0 #000; }
+.tf-btn:disabled { cursor:default; }
+.tf-btn.true-btn { border-color:var(--teal); } .tf-btn.false-btn { border-color:var(--pink); }
+.tf-btn.correct-ans { background:#00C9A730; box-shadow:4px 4px 0 var(--teal); }
+.tf-btn.wrong-ans { background:#FF4E9130; box-shadow:4px 4px 0 var(--pink); }
+
+/* ── HINT ── */
+.hint-btn { background:var(--yellow); border:var(--border); box-shadow:var(--shadow); border-radius:10px; padding:8px 16px; font-family:'Fredoka One',cursive; font-size:.88rem; color:#000; cursor:pointer; transition:transform .1s, box-shadow .1s; }
+.hint-btn:hover { transform:translate(-1px,-1px); box-shadow:5px 5px 0 #000; }
+.hint-box { background:#FFD70015; border:2px solid var(--yellow); border-radius:10px; padding:12px 16px; margin-top:10px; font-size:.87rem; font-weight:700; color:var(--yellow); display:none; }
+.hint-box.show { display:block; }
+
+/* ── EXPLANATION ── */
+.explain-box { margin-top:14px; border-radius:12px; overflow:hidden; border:var(--border); box-shadow:var(--shadow); display:none; }
+.explain-box.show { display:block; }
+.explain-header { padding:10px 16px; font-family:'Fredoka One',cursive; font-size:.95rem; display:flex;align-items:center;gap:8px; }
+.explain-header.correct-h { background:var(--teal); color:#000; }
+.explain-header.wrong-h { background:var(--pink); color:#fff; }
+.explain-body { background:#1a1a2e; padding:14px 16px; }
+.explain-section { margin-bottom:10px; }
+.explain-section:last-child { margin-bottom:0; }
+.explain-label { font-family:'Fredoka One',cursive; font-size:.7rem; letter-spacing:1px; text-transform:uppercase; margin-bottom:5px; display:flex;align-items:center;gap:5px; }
+.explain-label.why { color:var(--blue); } .explain-label.trap { color:var(--orange); } .explain-label.ref { color:var(--purple); } .explain-label.options-label { color:var(--teal); }
+.explain-text { font-size:.85rem; font-weight:600; line-height:1.6; color:#ddd; }
+.opt-explain-item { margin-bottom:6px; padding:7px 11px; border-radius:7px; font-size:.83rem; font-weight:700; }
+.opt-explain-item.oe-correct { background:#00C9A720; border-left:3px solid var(--teal); }
+.opt-explain-item.oe-wrong { background:#FF4E9115; border-left:3px solid var(--pink); }
+
+/* ── CARD BOTTOM BAR ── */
+.card-bottom { display:flex; gap:10px; align-items:center; margin-top:8px; }
+.answered-badge { font-family:'Fredoka One',cursive; font-size:.75rem; padding:4px 12px; border-radius:20px; border:2px solid #000; }
+.answered-badge.ab-correct { background:var(--teal); color:#000; }
+.answered-badge.ab-wrong { background:var(--pink); color:#fff; }
+
+/* ── EMPTY STATE ── */
+#empty-state { text-align:center; padding:60px 20px; display:none; }
+#empty-state .e-title { font-family:'Fredoka One',cursive; font-size:2rem; color:var(--muted); }
+#empty-state .e-sub { color:var(--muted); margin-top:8px; }
+
+/* ── STICKY STATS ── */
+#sticky-stats {
+  position:fixed; bottom:20px; right:20px; z-index:300;
+  background:var(--dark); border:var(--border); box-shadow:var(--shadow-lg); border-radius:16px;
+  padding:10px 16px; display:flex; gap:10px; align-items:center;
+}
+.stat-item { display:flex; flex-direction:column; align-items:center; }
+.stat-num { font-family:'Fredoka One',cursive; font-size:1.3rem; line-height:1; }
+.stat-label { font-size:.6rem; color:var(--muted); font-weight:700; text-transform:uppercase; }
+.stat-num.c { color:var(--teal); } .stat-num.w { color:var(--pink); } .stat-num.t { color:var(--yellow); }
+.stat-div { width:2px; height:30px; background:#333; }
+
+.reset-all-btn { background:var(--purple); border:var(--border); box-shadow:var(--shadow); border-radius:10px; padding:6px 14px; font-family:'Fredoka One',cursive; font-size:.8rem; color:#fff; cursor:pointer; transition:transform .1s; }
+.reset-all-btn:hover { transform:translate(-1px,-1px); box-shadow:4px 4px 0 #000; }
+
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+@media(max-width:600px){
+  .controls-bar{flex-direction:column; align-items:stretch;}
+  #topic-select,#diff-select{width:100%;}
+  .q-card{padding:16px 12px;}
+  #sticky-stats{bottom:10px;right:10px;padding:8px 12px;}
+}
+</style>
+</head>
+<body>
+<div id="header">
+  <div class="header-top">
+    <div>
+      <h1>📚 FRM Part 2 · Credit Risk Measurement and Management . Ch 19 . Future Value and Exposure</h1>
+      <div class="subtitle">Future Value &amp; Exposure · 100 Questions</div>
+    </div>
+    <div class="scoreboard">
+      <div class="score-pill correct">✅ <span id="sc">0</span></div>
+      <div class="score-pill wrong">❌ <span id="sw">0</span></div>
+      <div class="score-pill total">📊 <span id="sq">0</span>/100</div>
+    </div>
+  </div>
+  <div class="controls-bar">
+    <div class="search-wrap">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="search-input" placeholder="Search questions, topics, keywords..." oninput="applyFilters()">
+    </div>
+    <select id="topic-select" onchange="applyFilters()">
+      <option value="">📂 All Topics</option>
+    </select>
+    <select id="diff-select" onchange="applyFilters()">
+      <option value="">⚡ All Difficulties</option>
+      <option value="medium">🟡 Medium</option>
+      <option value="hard">🔴 Hard</option>
+    </select>
+    <button class="clear-btn" onclick="clearFilters()">✕ Clear</button>
+  </div>
+</div>
+<div id="progress-bar-wrap"><div id="progress-bar" style="width:0%"></div></div>
+
+<div id="app">
+  <div id="results-info">Showing all 100 questions</div>
+  <div id="q-list"></div>
+  <div id="empty-state">
+    <div class="e-title">🔍 No matches found</div>
+    <div class="e-sub">Try different search terms or clear filters</div>
+  </div>
+</div>
+
+<div id="sticky-stats">
+  <div class="stat-item"><div class="stat-num c" id="ss-c">0</div><div class="stat-label">Correct</div></div>
+  <div class="stat-div"></div>
+  <div class="stat-item"><div class="stat-num w" id="ss-w">0</div><div class="stat-label">Wrong</div></div>
+  <div class="stat-div"></div>
+  <div class="stat-item"><div class="stat-num t" id="ss-t">0</div><div class="stat-label">Done</div></div>
+  <button class="reset-all-btn" onclick="resetAll()">🔁 Reset</button>
+</div>
+
+<script>
+const QUESTIONS = [
+
+// ── Q1: MCQ ──
+{
+  id:1, type:'mcq', difficulty:'medium',
+  topic:'Positive/Negative Exposure', page:'p.274',
+  text: 'Bank A holds a derivatives contract with counterparty X. The current net value of the contract (after netting and margin) is –$5M (negative from Bank A\'s perspective). Counterparty X then defaults. What is Bank A\'s credit exposure at default?',
+  options:['–$5M, because the value is negative','$5M, because Bank A now claims this amount','$0, because Bank A owes money, not receives it','Determined by the recovery rate applied to $5M'],
+  correct: 2,
+  hint: 'Exposure = max(value, 0). Think about who loses when the value is negative.',
+  explanation: 'When the net value is negative from Bank A\'s perspective, Bank A owes money to counterparty X. Even if X defaults, Bank A is still legally obligated to pay — it does NOT gain from X\'s default. Therefore positive exposure = max(–5, 0) = 0.',
+  optionExplains: [
+    'Wrong. Exposure is NOT negative. You can\'t claim a loss you owe.',
+    'Wrong. $5M would be the exposure only if the value were +$5M (in Bank A\'s favor).',
+    'CORRECT. Positive exposure = max(value, 0) = max(–5, 0) = 0. Bank A doesn\'t lose from the default.',
+    'Wrong. Recovery rate applies to the claimant\'s positive exposure, not the party that owes.'
+  ],
+  trap: 'Students confuse the sign convention. Negative value = you owe them. You lose on positive value, not negative.'
+},
+
+// ── Q2: MCQ ──
+{
+  id:2, type:'mcq', difficulty:'hard',
+  topic:'DVA / Negative Exposure', page:'p.275',
+  text: 'Which xVA term is directly linked to the concept of "negative exposure" from an institution\'s own perspective?',
+  options:['CVA (Credit Value Adjustment)','FVA (Funding Value Adjustment)','DVA (Debt Value Adjustment)','KVA (Capital Value Adjustment)'],
+  correct: 2,
+  hint: 'DVA relates to the institution\'s OWN default risk. What exposure is triggered when you default?',
+  explanation: 'DVA represents "own counterparty risk" — the gain to an institution from the possibility of its own default. From the institution\'s perspective, a negative exposure (min(value,0)) would cause a loss to the counterparty if the institution defaults. DVA captures this.',
+  optionExplains: [
+    'Wrong. CVA is linked to positive exposure — the loss when the COUNTERPARTY defaults.',
+    'Wrong. FVA relates to funding costs/benefits of uncollateralized positions.',
+    'CORRECT. DVA = own default risk = negative exposure. If you owe money (negative value), your default harms them — this is DVA territory.',
+    'Wrong. KVA relates to the cost of holding regulatory capital, not directly to negative exposure.'
+  ],
+  trap: 'Students mix CVA (counterparty defaults, positive exposure) with DVA (own default, negative exposure). The symmetry is the key.'
+},
+
+// ── Q3: True/False ──
+{
+  id:3, type:'truefalse', difficulty:'medium',
+  topic:'Asymmetric Risk', page:'p.274',
+  text: 'TRUE or FALSE: A party with a negative contract value generally gains from its counterparty\'s default, since the counterparty can no longer demand payment.',
+  correct: false,
+  hint: 'Even in default, legal obligations don\'t disappear for the surviving party.',
+  explanation: 'FALSE. A party with a negative value is IN DEBT to the counterparty. Even if the counterparty defaults, the surviving party is still legally obligated to settle the amount owed. It does NOT gain — the position appears largely unchanged from a valuation perspective.',
+  wrongPart: 'The statement implies debt obligations evaporate at counterparty default — they don\'t.',
+  trap: 'Students think "default = relief." But legal close-out rules mean the in-debt party still must pay.'
+},
+
+// ── Q4: Formula Builder ──
+{
+  id:4, type:'mcq', difficulty:'medium',
+  topic:'Exposure Formulas', page:'p.274',
+  text: 'Which formula pair correctly defines BOTH positive exposure and negative exposure?',
+  options:[
+    'Positive = min(value,0); Negative = max(value,0)',
+    'Positive = max(value,0); Negative = min(value,0)',
+    'Positive = |value|; Negative = –|value|',
+    'Positive = EFV; Negative = –EFV'
+  ],
+  correct: 1,
+  hint: 'Positive exposure captures gains (loss risk). Negative exposure captures the mirror of that.',
+  explanation: 'Eq 19.1: Positive exposure = max(value, 0). Eq 19.2: Negative exposure = min(value, 0). These are the foundational formulas of the chapter.',
+  optionExplains: [
+    'Wrong. Options A and B are SWAPPED. min(value,0) gives the negative part.',
+    'CORRECT. Exactly Equations 19.1 and 19.2.',
+    'Wrong. Absolute values destroy sign information — meaningless here.',
+    'Wrong. EFV is the expected average, not the conditional positive/negative split.'
+  ],
+  trap: 'Swapping max and min is the most common error. Remember: POSITIVE exposure = max = floor at zero.'
+},
+
+// ── Q5: If-Then ──
+{
+  id:5, type:'mcq', difficulty:'medium',
+  topic:'Exposure Asymmetry', page:'p.274–275',
+  text: 'IF the net value of a derivatives portfolio (from Bank\'s perspective) increases significantly due to market moves, THEN which of the following effects on counterparty risk is MOST likely?',
+  options:[
+    'Counterparty risk decreases, since the bank now has less to lose',
+    'Counterparty risk increases, since the bank now has more to lose if counterparty defaults',
+    'Counterparty risk is unaffected — it depends only on the PD of the counterparty',
+    'Counterparty risk increases only if a netting agreement is absent'
+  ],
+  correct: 1,
+  hint: 'Higher positive value = larger claim at default. Think about what you lose if counterparty defaults NOW.',
+  explanation: 'Counterparty risk (and CVA) is driven by positive exposure = max(value, 0). As value increases, positive exposure increases, meaning the bank stands to lose MORE if the counterparty defaults. Counterparty risk increases.',
+  optionExplains: [
+    'Wrong. Higher value = higher claim at default = MORE counterparty risk, not less.',
+    'CORRECT. Positive exposure = max(value, 0) grows as value grows. Risk increases.',
+    'Wrong. While PD matters for CVA, the exposure component also critically matters.',
+    'Wrong. Netting affects aggregation, but even in a single-trade setup this logic holds.'
+  ],
+  trap: 'Students think "I\'m winning so I\'m safer." In counterparty risk, winning MORE means MORE to lose at default.'
+},
+
+// ── Q6: Spot the Error ──
+{
+  id:6, type:'mcq', difficulty:'medium',
+  topic:'Definition of Value', page:'p.275',
+  text: 'SPOT THE ERROR: "For xVA calculations, market practice is to use the actual close-out value of the contract, since the ISDA documentation ensures this is always objectively determined and equivalent to base value."',
+  options:[
+    'Error: market practice uses BASE value, not actual close-out value, because actual value creates a recursive problem',
+    'Error: ISDA documentation is not used for xVA — Basel III dictates this',
+    'Error: actual close-out value and base value are always identical in practice',
+    'No error — this accurately describes market practice'
+  ],
+  correct: 0,
+  hint: 'What does the text say about "actual value" containing xVA components?',
+  explanation: 'The actual close-out value contains xVA components, creating a RECURSIVE problem (CVA depends on exposure, which depends on close-out value, which depends on CVA...). Market practice uses base value as a clean proxy. It is NOT always objectively determined.',
+  optionExplains: [
+    'CORRECT. Two errors in the statement: (1) market practice uses base value, (2) actual value is NOT objectively determined — it\'s subjective and creates recursion.',
+    'Wrong. ISDA IS used, but it creates complexity, not clarity. Basel III isn\'t the issue here.',
+    'Wrong. They are explicitly NOT identical — the difference is the whole point of section 19.1.2.',
+    'Wrong. The statement contains a clear factual error about market practice.'
+  ],
+  trap: 'Students assume "documentation = objective." The recursive xVA problem is a subtle but key concept.'
+},
+
+// ── Q7: MCQ ──
+{
+  id:7, type:'mcq', difficulty:'medium',
+  topic:'PFE vs VaR', page:'p.276–277',
+  text: 'Potential Future Exposure (PFE) is analogous to which market risk measure, and at what horizon does traditional VaR operate?',
+  options:[
+    'VaR; 10-day horizon (traditional market risk)',
+    'Expected Shortfall; 1-year horizon',
+    'CVaR; 30-day horizon',
+    'Stress VaR; multiple years'
+  ],
+  correct: 0,
+  hint: 'The text explicitly calls PFE "an equivalent metric to VAR." What horizon does traditional market risk VaR use?',
+  explanation: 'PFE is explicitly described as an equivalent metric to VaR (p.277). Traditional market risk capital models use a 10-day VaR horizon. However, PFE must extend to much longer horizons (years) due to the nature of derivatives.',
+  optionExplains: [
+    'CORRECT. PFE ≈ VaR; traditional VaR = 10-day horizon.',
+    'Wrong. Expected Shortfall is a different measure (though EPE is analogous to ES, not PFE).',
+    'Wrong. CVaR is another name for Expected Shortfall, not the PFE analog.',
+    'Wrong. Stress VaR is a different regulatory concept.'
+  ],
+  trap: 'Students confuse EPE (similar to Expected Shortfall) with PFE (similar to VaR). They\'re different metrics.'
+},
+
+// ── Q8: MCQ (calculation) ──
+{
+  id:8, type:'mcq', difficulty:'hard',
+  topic:'EPE/ENE Calculation', page:'p.278',
+  text: 'Five equally-probable scenarios give future exposures of: +80, +40, +10, –20, –50. What is the EPE?',
+  options:['26','13','12','16'],
+  correct: 1,
+  hint: 'EPE = average of all scenarios, but negatives are SET TO ZERO, then divide by total count (5).',
+  explanation: 'EPE = (80 + 40 + 10 + 0 + 0) / 5 = 130/5 = 26. Wait — let me recheck: EPE = (max(80,0) + max(40,0) + max(10,0) + max(–20,0) + max(–50,0)) / 5 = (80+40+10+0+0)/5 = 130/5 = 26.',
+  optionExplains: [
+    'CORRECT. 26 = (80+40+10+0+0)/5.',
+    'Wrong. 13 would be (80+40+10–20–50)/5 = 60/5 = 12 — that\'s EFV, not EPE.',
+    'Wrong. 12 = EFV = (80+40+10–20–50)/5.',
+    'Wrong. 16 uses wrong inclusion/exclusion of negatives.'
+  ],
+  trap: 'Students calculate EFV (include negatives) when asked for EPE (zero out negatives, keep total denominator).'
+},
+
+// ── Q9: Drag order → represented as MCQ ──
+{
+  id:9, type:'mcq', difficulty:'medium',
+  topic:'Exposure Metrics Hierarchy', page:'p.277–278',
+  text: 'Rank these exposure metrics from SMALLEST to LARGEST in absolute terms for a distribution with mean > 0 and moderate variance: ENE, EFV, EPE, PFE (99%)',
+  options:[
+    'ENE < EFV < EPE < PFE(99%)',
+    'EFV < ENE < EPE < PFE(99%)',
+    'ENE < EPE < EFV < PFE(99%)',
+    'EPE < ENE < PFE(99%) < EFV'
+  ],
+  correct: 0,
+  hint: 'ENE is negative (small abs value when mean>0), EFV is the mean, EPE > EFV since it zero-floors negatives, PFE is a high-confidence tail.',
+  explanation: 'For a positively-skewed distribution (mean > 0): |ENE| is small (most scenarios are positive). EFV = mean. EPE > EFV because EPE zeros out negatives (boosting the average). PFE at 99% is the 99th percentile — largest of all.',
+  optionExplains: [
+    'CORRECT. This ordering holds for positive-mean distributions.',
+    'Wrong. EFV is NOT smaller than |ENE| when mean > 0.',
+    'Wrong. EPE > EFV always (zeroing negatives can only increase the average).',
+    'Wrong. PFE at high confidence level is always the largest value.'
+  ],
+  trap: 'EPE > EFV is counterintuitive but follows from the zero-flooring of negatives.'
+},
+
+// ── Q10: True/False ──
+{
+  id:10, type:'truefalse', difficulty:'medium',
+  topic:'Average EPE', page:'p.279',
+  text: 'TRUE or FALSE: Average EPE is sometimes called a "loan equivalent" because it represents the average outstanding loan amount effectively extended to the counterparty.',
+  correct: true,
+  hint: 'Think about what EPE averaged across time captures economically.',
+  explanation: 'TRUE. Average EPE (weighted average of EPE across time horizons) represents the average amount effectively "lent" to the counterparty. This is why it\'s called a loan equivalent — it\'s the approximate exposure analogous to a loan\'s notional.',
+  wrongPart: 'N/A — statement is true.',
+  trap: 'Students forget that EPE has a regulatory capital justification precisely because of this loan-equivalent interpretation.'
+},
+
+// ── Q11: Weaken/Strengthen ──
+{
+  id:11, type:'mcq', difficulty:'hard',
+  topic:'Option Analogy', page:'p.275–276',
+  text: 'ARGUMENT: "Because counterparty risk exposure behaves exactly like a short option position, it can be priced with the same accuracy and sophistication as standard options." Which fact MOST WEAKENS this argument?',
+  options:[
+    'Options and exposure both depend on volatility',
+    'xVA contains subjective components (credit/funding curves, WWR) and the exposure payoff cannot be written down correctly',
+    'Margin agreements change the strike of underlying options',
+    'Both options and exposure require simulation of future market states'
+  ],
+  correct: 1,
+  hint: 'The text says the option analogy is "correct but potentially misleading." WHY?',
+  explanation: 'The text explicitly states xVA cannot be treated with the accuracy afforded to standard options because: (1) the payoff (exposure) can\'t be written down correctly, and (2) xVA contains subjective components like credit curves, funding curves, and WWR. The analogy is incomplete.',
+  optionExplains: [
+    'Wrong. This STRENGTHENS the analogy — it shows similarity, not difference.',
+    'CORRECT. This directly undermines the claim of "same accuracy" — the payoff can\'t be written, and subjective components create fundamental differences.',
+    'Wrong. This actually extends the analogy (margin = strike change) — it strengthens, not weakens.',
+    'Wrong. This is a similarity, not a difference — it supports the analogy.'
+  ],
+  trap: 'Students who know the option analogy well tend to pick options that STRENGTHEN it, missing what undermines the precision claim.'
+},
+
+// ── Q12: MCQ ──
+{
+  id:12, type:'mcq', difficulty:'medium',
+  topic:'Exposure vs VaR Differences', page:'p.276',
+  text: 'Which factor makes exposure quantification HARDER than standard 10-day VaR, according to the text?',
+  options:[
+    'VaR uses Monte Carlo simulation; exposure uses analytical formulas',
+    'Exposure must account for "ageing" of transactions and path dependency over long horizons',
+    'VaR models always use 99% confidence; exposure uses 95%',
+    'Exposure only matters at maturity; VaR matters continuously'
+  ],
+  correct: 1,
+  hint: 'The text lists Time Horizon, Risk Mitigants, and Application as key differences. "Ageing" is mentioned under Time Horizon.',
+  explanation: '"Ageing" refers to tracking future cash flows, termination events, exercise decisions, and margin postings over long horizons. In 10-day VaR, this complexity can often be ignored. For exposure, it\'s critical and can create path dependency.',
+  optionExplains: [
+    'Wrong. Both use simulation; the methodology overlap is significant.',
+    'CORRECT. Ageing + path dependency over long horizons is explicitly listed as a key additional complexity.',
+    'Wrong. Confidence levels vary in both contexts; this isn\'t the key difference.',
+    'Wrong. Exposure is tracked continuously over the full life of the contract, not just at maturity.'
+  ],
+  trap: 'Students often focus on confidence levels as the difference, missing the deeper structural issues of long-horizon modeling.'
+},
+
+// ── Q13: MCQ ──
+{
+  id:13, type:'mcq', difficulty:'medium',
+  topic:'EFV Drivers', page:'p.277',
+  text: 'An upward-sloping yield curve causes EFV to deviate significantly from zero for a payer interest rate swap. What is the PRIMARY mechanism?',
+  options:[
+    'Interest rate volatility is higher with an upward-sloping curve',
+    'Forward rates exceed spot rates, creating an implied drift that raises future expected value',
+    'Fixed payments cease when the yield curve steepens',
+    'The netting set reduces exposure systematically'
+  ],
+  correct: 1,
+  hint: 'The text says "forward rates can differ significantly from current spot variables" — what does this introduce?',
+  explanation: 'With an upward-sloping yield curve, forward rates > spot rates. This introduces an implied drift (trend) in the future evolution of market variables. For a payer swap (paying fixed, receiving floating), the expectation of rising rates means higher future floating receipts → higher EFV. This is the "cash flow differential" and "forward rates" effect.',
+  optionExplains: [
+    'Wrong. Volatility affects EPE/PFE (spread of distribution), not directly the drift (EFV).',
+    'CORRECT. Forward rate > spot rate → implied drift → EFV deviates from zero.',
+    'Wrong. Fixed payments are deterministic — they don\'t cease with yield curve changes.',
+    'Wrong. Netting affects aggregated exposure, not the drift mechanism of a single swap.'
+  ],
+  trap: 'Students confuse volatility (which affects spread/uncertainty) with drift (which affects expected value). Yield curve shape → drift → EFV.'
+},
+
+// ── Q14: MCQ (Square root of time) ──
+{
+  id:14, type:'mcq', difficulty:'medium',
+  topic:'FX Forward Exposure Profile', page:'p.279–280',
+  text: 'An FX forward contract has a 1-year maturity. According to the square-root-of-time rule, at which point in time does exposure reach its MAXIMUM?',
+  options:[
+    'At inception (t = 0)',
+    'At maturity (t = T = 1 year)',
+    'At t = T/3 (approximately 4 months)',
+    'At t = T/2 (6 months)'
+  ],
+  correct: 1,
+  hint: 'For a FORWARD (single cash flow at maturity), the exposure formula is Exposure ∝ √t. What does this do as t → T?',
+  explanation: 'For a forward contract with a single settlement at maturity, exposure follows Exposure ∝ √t for t ≤ T. This is monotonically increasing — there is no rolloff. So exposure is MAXIMUM at maturity (t = T). The T/3 rule applies to the SWAP formula (T–t)√t, NOT the forward.',
+  optionExplains: [
+    'Wrong. At t=0, exposure = 0 (no uncertainty yet).',
+    'CORRECT. For forwards (√t profile), exposure peaks at t = T.',
+    'Wrong. T/3 is the maximum for SWAPS (formula (T–t)√t), not forwards.',
+    'Wrong. T/2 has no special significance for the forward exposure formula.'
+  ],
+  trap: 'T/3 is the maximum for SWAPS. T is the maximum for FORWARDS. These are the two most commonly confused profile facts.'
+},
+
+// ── Q15: MCQ ──
+{
+  id:15, type:'mcq', difficulty:'hard',
+  topic:'IRS Exposure Profile', page:'p.280',
+  text: 'For an interest rate swap, the exposure profile follows Exposure ∝ (T – t)√t. Where does the maximum exposure occur?',
+  options:[
+    'At t = 0','At t = T/2','At t = T/3','At t = T'],
+  correct: 2,
+  hint: 'Differentiate (T–t)√t with respect to t and set to zero. The answer is a simple fraction of T.',
+  explanation: 'The function (T–t)√t has its maximum at t = T/3. This is derived by taking the derivative: d/dt[(T–t)√t] = (T–t)/(2√t) – √t = 0, which gives T–t = 2t → T = 3t → t = T/3. The hump-shaped IRS profile peaks at one-third of maturity.',
+  optionExplains: [
+    'Wrong. At t=0, (T–0)×√0 = 0. No exposure at inception.',
+    'Wrong. T/2 is intuitive but incorrect. The √t and (T–t) terms peak before T/2.',
+    'CORRECT. Mathematical maximum of (T–t)√t is at t = T/3.',
+    'Wrong. At t=T, (T–T)×√T = 0. Zero exposure at maturity (contract ends).'
+  ],
+  trap: 'T/2 seems like the natural peak (halfway), but the √t weighting shifts the peak earlier to T/3.'
+},
+
+// ── Q16: True/False ──
+{
+  id:16, type:'truefalse', difficulty:'medium',
+  topic:'Swap vs Forward Exposure', page:'p.279–280',
+  text: 'TRUE or FALSE: A vanilla interest rate swap has a monotonically increasing exposure profile from inception to maturity, similar to an FX forward contract.',
+  correct: false,
+  hint: 'Does an IRS have a "peaked" shape or a steadily rising shape?',
+  explanation: 'FALSE. A vanilla IRS has a PEAKED (hump-shaped) profile — it rises initially due to future uncertainty, then falls as the remaining maturity shortens and cash flows roll off. The monotonically increasing (√t) profile belongs to FX forwards, not swaps.',
+  wrongPart: '"monotonically increasing" is the error — the swap has rolloff effect creating a peak and decline.',
+  trap: 'The forward exposure formula (√t) looks similar to the swap formula ((T–t)√t) at first glance, but the (T–t) term creates a fundamentally different shape.'
+},
+
+// ── Q17: MCQ ──
+{
+  id:17, type:'mcq', difficulty:'medium',
+  topic:'Cash Flow Frequency', page:'p.280',
+  text: 'A basis swap makes payments quarterly but receives payments only semiannually (unequal frequencies). Compared to an equivalent equal-payment swap, this basis swap has:',
+  options:[
+    'Lower EPE, since more cash flows mean faster amortization',
+    'Higher EPE, since the more frequent outflows increase net exposure',
+    'Identical EPE — payment frequency doesn\'t affect exposure',
+    'Higher PFE but unchanged EPE'
+  ],
+  correct: 1,
+  hint: 'When you PAY more frequently than you RECEIVE, what happens to your net position?',
+  explanation: 'Paying more frequently (quarterly) vs. receiving less frequently (semiannual) creates a cash flow imbalance — the party is effectively "lending" more frequently. This results in higher net exposure and thus higher EPE compared to the equal-payment swap.',
+  optionExplains: [
+    'Wrong. More frequent OUTFLOWS don\'t amortize exposure — they increase it.',
+    'CORRECT. More frequent payments made (vs received) → higher net outflow → higher EPE.',
+    'Wrong. Payment frequency explicitly affects the shape of the exposure profile.',
+    'Wrong. Both EPE and PFE are affected by payment frequency asymmetry.'
+  ],
+  trap: 'Students think "more cash flows = faster declining exposure." The direction of flows matters crucially.'
+},
+
+// ── Q18: MCQ ──
+{
+  id:18, type:'mcq', difficulty:'hard',
+  topic:'Receiver Swap / Curve Shape', page:'p.281',
+  text: 'With an upward-sloping yield curve, the EFV of a RECEIVER interest rate swap (receiving fixed, paying floating) is:',
+  options:[
+    'Positive, since fixed receipts exceed expected floating payments early on',
+    'Negative, since expected floating payments will rise and exceed fixed receipts later',
+    'Zero, since a par swap has equal expected cash flows by definition',
+    'Positive, since the forward swap rate exceeds the current swap rate'
+  ],
+  correct: 1,
+  hint: 'For a receiver swap, you RECEIVE fixed and PAY floating. With upward-sloping curves, what do forward rates imply?',
+  explanation: 'With upward-sloping curves: forward rates > current spot rates → projected floating cash flows are expected to RISE above the fixed rate in later periods. For a RECEIVER swap (paying floating), this means you\'ll be paying MORE floating later than you receive in fixed → negative expected net cash flows → negative EFV. The ENE is correspondingly more negative.',
+  optionExplains: [
+    'Wrong. While early periods favor the receiver (fixed > floating), the forward rate effect dominates EFV.',
+    'CORRECT. Rising expected floating rates (from upward-sloping curve) mean the receiver pays more later → EFV < 0.',
+    'Wrong. A par swap starts at zero VALUE, but EFV at future time ≠ 0 when there\'s a drift from yield curve shape.',
+    'Wrong. For the PAYER swap, higher forward rates create positive EFV. For the RECEIVER, it\'s reversed.'
+  ],
+  trap: 'Students mix up payer vs receiver direction. Remember: receiver of fixed loses when rates rise (analogous to holding a bond in a rising rate environment).'
+},
+
+// ── Q19: MCQ (Cross-currency) ──
+{
+  id:19, type:'mcq', difficulty:'hard',
+  topic:'Cross-Currency Swap Exposure', page:'p.281–283',
+  text: 'A cross-currency swap payer is paying a HIGH interest rate currency against receiving a LOW interest rate currency. Which statement about exposure is MOST accurate?',
+  options:[
+    'EPE is very low since high interest payments deplete positive value',
+    'EPE is very high, driven by both the IRS component and expected gain on notional exchange at maturity',
+    'The dominant risk driver is interest rate volatility, not FX volatility',
+    'Exposure is symmetric between the high-rate payer and low-rate payer'
+  ],
+  correct: 1,
+  hint: 'The high-rate payer expects an offsetting GAIN on the final notional exchange. How does this affect EFV and EPE?',
+  explanation: 'The high-rate payer expects to receive a currency that has appreciated (due to interest rate differentials and PPP logic). This "expected gain on the notional exchange at maturity" creates a strongly positive EFV and high EPE. Additionally, FX volatility (not just IR volatility) drives the risk, making CCS exposures considerable.',
+  optionExplains: [
+    'Wrong. High interest payments do create a negative drift initially, but the notional exchange gain dominates.',
+    'CORRECT. Expected gain on notional + FX volatility = very high EPE for high-rate payer.',
+    'Wrong. FX volatility is explicitly stated as the DOMINANT driver for CCS, with IR swap contribution being smaller.',
+    'Wrong. Exposures are highly asymmetric — high-rate payer has large EPE, low-rate payer has large ENE (negative EFV).'
+  ],
+  trap: 'Students overlook the notional exchange at maturity, which is the BIGGEST driver of CCS exposure.'
+},
+
+// ── Q20: Cause→Effect Match (as MCQ) ──
+{
+  id:20, type:'mcq', difficulty:'medium',
+  topic:'Moneyness Effect', page:'p.283',
+  text: 'A portfolio that is deeply IN-THE-MONEY (large positive current value) exhibits which exposure characteristics?',
+  options:[
+    'High EPE and high ENE, since both tails are wide',
+    'High EPE, low ENE, and EPE close to EFV — more predictable profile',
+    'Low EPE and high ENE — the positive value offsets future gains',
+    'EPE = ENE since moneyness creates symmetric exposure'
+  ],
+  correct: 1,
+  hint: 'ITM = large positive value. What happens to the probability of the value going negative? Analogy: ITM option behavior.',
+  explanation: 'An ITM portfolio has high positive value → high EPE. The probability of the value going negative is LOW → ENE is small. Because the exposure is "deep in the money," it\'s more predictable (less sensitive to volatility) — analogous to a deep ITM option. EPE ≈ EFV in this case.',
+  optionExplains: [
+    'Wrong. ENE is SMALL for ITM portfolios (low chance of value turning negative).',
+    'CORRECT. ITM → high EPE, low ENE, EPE ≈ EFV. More deterministic.',
+    'Wrong. High positive current value drives HIGH EPE, not low.',
+    'Wrong. Moneyness creates ASYMMETRIC exposure — ITM or OTM shifts the whole distribution.'
+  ],
+  trap: 'OTM portfolios have LOW EPE and HIGH ENE. ITM is the OPPOSITE. Students frequently confuse these.'
+},
+
+// ── Q21: MCQ ──
+{
+  id:21, type:'mcq', difficulty:'hard',
+  topic:'Swaption Exposure', page:'p.284–285',
+  text: 'Before the exercise date of a physically-settled European interest rate swaption, how does its PFE compare to the equivalent forward-starting swap?',
+  options:[
+    'Swaption PFE < Forward Swap PFE, since the option may not be exercised',
+    'Swaption PFE = Forward Swap PFE before exercise',
+    'Swaption PFE > Forward Swap PFE before exercise',
+    'They cannot be compared since settlement types differ'
+  ],
+  correct: 2,
+  hint: 'An OPTION is always worth at least as much as the obligation to enter the same contract.',
+  explanation: 'Before the exercise date, the option to enter a contract CANNOT be worth LESS than the equivalent obligation (forward swap). The swaption holder has the right but not the obligation — this optionality adds value. Therefore swaption PFE > forward swap PFE before exercise.',
+  optionExplains: [
+    'Wrong. The possibility of non-exercise does NOT reduce PFE below the forward swap — the option value adds to it.',
+    'Wrong. They would only be equal in degenerate cases.',
+    'CORRECT. Option value ≥ obligation value always. Swaption PFE ≥ Forward PFE before exercise.',
+    'Wrong. This comparison is entirely valid and explicitly made in the text.'
+  ],
+  trap: 'Students think "might not exercise = lower risk." But the optionality premium means swaption value always exceeds or equals forward value.'
+},
+
+// ── Q22: MCQ ──
+{
+  id:22, type:'mcq', difficulty:'hard',
+  topic:'CDS Exposure Profile', page:'p.285',
+  text: 'For a long-protection single-name CDS, the PFE profile shows a sudden "jump." What causes this jump, and what is it proportional to?',
+  options:[
+    'A jump in volatility of the reference credit; proportional to notional × current spread',
+    'A sudden credit event (default) of the reference entity; approximately (1 – recovery rate) × notional',
+    'An increase in counterparty PD; proportional to CVA charge',
+    'Spread widening below the protection threshold; proportional to duration × spread change'
+  ],
+  correct: 1,
+  hint: 'What happens to a long-protection CDS when the reference entity defaults? What is the payout?',
+  explanation: 'For a long-protection CDS, the protection buyer receives (1 – recovery rate) × notional upon default of the reference entity. This creates a discrete "jump" in PFE when the reference entity defaults. In the example (40% recovery), PFE jumps to ~60% of notional. The jump reflects the credit event payout.',
+  optionExplains: [
+    'Wrong. Volatility of the reference credit creates gradual moves, not jumps.',
+    'CORRECT. Credit event = (1 – recovery) × notional jump. With 40% recovery → 60% PFE spike.',
+    'Wrong. Counterparty PD affects CVA, but the PFE jump is from the REFERENCE entity default.',
+    'Wrong. Duration × spread describes standard bond math, not CDS discrete payoff.'
+  ],
+  trap: 'Students confuse the REFERENCE ENTITY (underlying CDS) default vs the COUNTERPARTY default. PFE jumps from reference entity default, not counterparty default.'
+},
+
+// ── Q23: True/False ──
+{
+  id:23, type:'truefalse', difficulty:'medium',
+  topic:'Aggregation / Netting', page:'p.286',
+  text: 'TRUE or FALSE: When two transactions are aggregated under a netting agreement, the aggregated EFV equals the sum of the individual EFVs.',
+  correct: true,
+  hint: 'EFV is just an average (expected value). Is the average of a sum equal to the sum of averages?',
+  explanation: 'TRUE. EFV is the expected (average) value. By linearity of expectation, EFV(A+B) = EFV(A) + EFV(B). This is explicitly noted in the text: "EFV is additive across transactions." EPE and ENE, however, are NOT additive.',
+  wrongPart: 'N/A — the statement is true.',
+  trap: 'Students assume EPE is also additive (it\'s not). EFV is additive because it\'s a simple average; EPE and ENE involve non-linear functions (max, min).'
+},
+
+// ── Q24: MCQ ──
+{
+  id:24, type:'mcq', difficulty:'hard',
+  topic:'Netting Aggregation', page:'p.286–287',
+  text: 'Transactions A and B have EPE of 18 and 4 respectively. Their AGGREGATED EPE is 21. This is GREATER than each individual EPE but LESS than the sum (22). This result occurs because:',
+  options:[
+    'There must be a computational error — aggregated EPE cannot exceed individual EPE',
+    'The transactions are positively correlated, so few scenarios show offsetting values, but some still do',
+    'Aggregated EPE always equals the sum of individual EPEs by the linearity of expectation',
+    'EPE is always larger when transactions are negatively correlated'
+  ],
+  correct: 1,
+  hint: 'Aggregated EPE ≤ sum of EPEs always. But with HIGH correlation, how much diversification occurs?',
+  explanation: 'With HIGH positive correlation, transactions tend to be positive/negative at the SAME time. Netting produces little diversification benefit. The aggregated EPE is close to (but still slightly less than) the sum (22 vs 22). Only the rare scenario where values have OPPOSITE signs produces any netting benefit. Result: 21 < 22 but 21 > either individual EPE.',
+  optionExplains: [
+    'Wrong. Aggregated EPE CAN exceed individual EPEs — when two positively correlated exposures are combined, the net positive scenarios dominate.',
+    'CORRECT. High positive correlation → little netting benefit → aggregated EPE ≈ sum but still < sum.',
+    'Wrong. EFV is additive (by linearity), but EPE is NOT (it involves max() function).',
+    'Wrong. NEGATIVE correlation gives LARGER netting benefit, reducing aggregated EPE more significantly.'
+  ],
+  trap: 'Students assume netting always dramatically reduces EPE. With high positive correlation, the benefit is minimal.'
+},
+
+// ── Q25: MCQ ──
+{
+  id:25, type:'mcq', difficulty:'hard',
+  topic:'Negative Correlation Netting', page:'p.287',
+  text: 'Transactions C and D have EFV of 10 and –5, and EPE of 18 and 4. When combined with NEGATIVE correlation, the aggregated EPE = 9. Compare to the positive-correlation case where aggregated EPE = 21. What does this illustrate?',
+  options:[
+    'Negative correlation INCREASES EPE because values are often on opposite sides',
+    'Negative correlation DECREASES aggregated EPE because values frequently offset each other',
+    'Correlation only affects EFV, not EPE',
+    'The aggregated EPE is always between ENE and EFV regardless of correlation'
+  ],
+  correct: 1,
+  hint: 'Negative correlation → values tend to have OPPOSITE signs → better netting.',
+  explanation: 'With negative correlation, when Transaction C is positive, D tends to be negative (and vice versa). This creates MORE scenarios where values offset each other, dramatically reducing aggregated EPE. 9 << 21 (positive correlation case). This is the core rationale for close-out netting.',
+  optionExplains: [
+    'Wrong. Negative correlation helps netting, it doesn\'t increase EPE.',
+    'CORRECT. Negative correlation → opposite-sign scenarios → better netting → lower aggregated EPE.',
+    'Wrong. Correlation fundamentally affects EPE (and ENE) through the netting benefit.',
+    'Wrong. This statement is not a general rule — no such bounding relationship holds.'
+  ],
+  trap: 'Students know "negative correlation = diversification" in a portfolio theory sense, but here it specifically means more netting scenarios, driving EPE down.'
+},
+
+// ── Q26: MCQ ──
+{
+  id:26, type:'mcq', difficulty:'medium',
+  topic:'Impact of Margin', page:'p.287',
+  text: 'Under two-way collateralization, margin is received when value is positive and posted when value is negative. How does received margin change the positive exposure formula?',
+  options:[
+    'Positive exposure = max(value, 0) + margin',
+    'Positive exposure = max(value – margin, 0)',
+    'Positive exposure = max(value, 0) × (1 – margin%)',
+    'Positive exposure = max(value, margin)'
+  ],
+  correct: 1,
+  hint: 'Received margin REDUCES exposure. It\'s subtracted from value before taking the max.',
+  explanation: 'Eq 19.5: Positive exposure = max(value – margin, 0). Received margin is positive and subtracts from value, reducing exposure. Posted margin (negative margin) adds to value, potentially increasing exposure.',
+  optionExplains: [
+    'Wrong. Adding margin would INCREASE exposure — the opposite of what collateral does.',
+    'CORRECT. Margin is subtracted from value first, then max(·,0) is applied. Eq 19.5.',
+    'Wrong. Margin doesn\'t work as a percentage multiplier — it\'s a direct cash offset.',
+    'Wrong. max(value, margin) has no economic meaning in this context.'
+  ],
+  trap: 'Students add margin instead of subtracting it. Received margin REDUCES your net exposure.'
+},
+
+// ── Q27: MCQ ──
+{
+  id:27, type:'mcq', difficulty:'medium',
+  topic:'Margin Can Increase Exposure', page:'p.288–289',
+  text: 'Under what circumstance can POSTING margin (paying collateral to the counterparty) actually INCREASE your positive credit exposure?',
+  options:[
+    'When the margin posted is cash — cash never creates exposure',
+    'When previously-posted margin has not yet been returned, creating a positive exposure on the margin itself',
+    'When the counterparty is investment grade — margins are not required to be returned',
+    'Posting margin always reduces positive exposure; this scenario cannot occur'
+  ],
+  correct: 1,
+  hint: 'What if you posted margin when value was negative, but then value moves back up — and the margin hasn\'t been returned yet?',
+  explanation: 'When previously-posted margin has not yet been returned (e.g., after a portfolio value reversal), the outstanding margin creates a positive exposure — you\'re owed that margin back. This is shown in the text as a scenario where EPE actually increases under certain margin dynamics.',
+  optionExplains: [
+    'Wrong. Cash margin CAN create exposure if not timely returned.',
+    'CORRECT. Unreturned posted margin = a receivable = positive exposure.',
+    'Wrong. Credit quality of counterparty doesn\'t determine return timing legally.',
+    'Wrong. The text explicitly states margin CAN increase exposure in certain scenarios.'
+  ],
+  trap: 'Students think collateral is always protective. But POSTED (outgoing) margin creates a receivable from the counterparty — which is exposure!'
+},
+
+// ── Q28: MCQ ──
+{
+  id:28, type:'mcq', difficulty:'medium',
+  topic:'Three Imperfections of Margin', page:'p.289',
+  text: 'Which of the following is NOT one of the three reasons why collateralization is NOT a perfect form of risk mitigation?',
+  options:[
+    'Granularity effect (thresholds and MTAs mean not all margin can be called)',
+    'Delay in receiving margin (operational components, disputes, MPoR)',
+    'Variation in the value of non-cash margin itself',
+    'Counterparty can refuse to return previously-posted margin upon demand'
+  ],
+  correct: 3,
+  hint: 'The text lists three specific reasons. "Refusal to return" is a legal issue, not the three listed.',
+  explanation: 'The three explicit reasons from the text: (1) Granularity — can\'t call all margin needed, (2) Delay — operational lag in receiving margin (MPoR), (3) Value variation — non-cash margin can change in value. "Counterparty refusal" is NOT one of the three listed imperfections.',
+  optionExplains: [
+    'Wrong. This IS one of the three — granularity effect is explicitly listed.',
+    'Wrong. This IS one of the three — delay and MPoR explicitly listed.',
+    'Wrong. This IS one of the three — variation in margin value explicitly listed.',
+    'CORRECT. This is NOT in the three listed imperfections. Legal disputes/refusal are separate issues.'
+  ],
+  trap: 'Students who don\'t memorize all three imperfections may confuse legitimate issues (like legal disputes) with the specific three named in the text.'
+},
+
+// ── Q29: MCQ ──
+{
+  id:29, type:'mcq', difficulty:'medium',
+  topic:'Collateralization Levels', page:'p.289',
+  text: 'In terms of EPE reduction, order these from HIGHEST EPE to LOWEST EPE: (i) Uncollateralized, (ii) Partially collateralized, (iii) Strongly collateralized, (iv) Overcollateralized',
+  options:[
+    'iv > iii > ii > i',
+    'i > ii > iii > iv',
+    'ii > i > iv > iii',
+    'i = ii > iii > iv'
+  ],
+  correct: 1,
+  hint: 'More collateral = less exposure. Order from most to least collateral gives lowest to highest EPE.',
+  explanation: 'Uncollateralized has the highest EPE. As collateralization increases: Partial (threshold reduces some exposure) → Strong (threshold = 0, MPoR leaves some residual) → Overcollateralized (initial margin drives EPE toward zero). EPE: Uncollateralized > Partial > Strong > Overcollateralized.',
+  optionExplains: [
+    'Wrong. This is the REVERSE order (lowest EPE to highest).',
+    'CORRECT. i > ii > iii > iv correctly ranks from highest to lowest EPE.',
+    'Wrong. Partial should not exceed uncollateralized.',
+    'Wrong. Uncollateralized and partial are NOT equal; partial has lower EPE.'
+  ],
+  trap: 'Students who confuse "more collateral = more exposure" get this backwards. More collateral = LESS EPE.'
+},
+
+// ── Q30: MCQ ──
+{
+  id:30, type:'mcq', difficulty:'medium',
+  topic:'Funding Costs', page:'p.290',
+  text: 'A derivatives portfolio has value +$10M with $8M variation margin received. What is the approximate FUNDING position (ignore initial margin)?',
+  options:['+$18M (funding cost)','–$2M (funding benefit)','$0 (fully funded)','$+2M (funding cost)'],
+  correct: 3,
+  hint: 'Funding = value – margin (received). Positive funding position = cost.',
+  explanation: 'Eq 19.7: funding = value – margin = 10 – 8 = +$2M. A positive funding position = funding COST. The $8M of received margin offsets most of the $10M asset, leaving $2M that still needs to be funded.',
+  optionExplains: [
+    'Wrong. You don\'t ADD margin to get funding cost. $18M = value + margin (wrong sign).',
+    'Wrong. –$2M would mean a funding BENEFIT. But value (10) > margin (8), so there\'s a net cost.',
+    'Wrong. The position is not fully funded — $2M remains unfunded.',
+    'CORRECT. Funding = 10 – 8 = +2, a funding cost.'
+  ],
+  trap: 'Students add margin instead of subtracting, or confuse positive/negative funding direction.'
+},
+
+// ── Q31: MCQ ──
+{
+  id:31, type:'mcq', difficulty:'hard',
+  topic:'Funding vs Credit Exposure Differences', page:'p.290',
+  text: 'Which ONE of these is NOT a stated difference between funding exposure and credit exposure in the text?',
+  options:[
+    'Definition of value: credit exposure uses close-out (default) value; funding uses objective (non-default) value',
+    'MPoR: relevant for credit exposure; for funding, normal margin posting frequency (shorter) applies',
+    'Aggregation level: credit exposure at netting-set level; funding at overall portfolio level',
+    'Wrong-way risk is equally important for both credit exposure and funding'
+  ],
+  correct: 3,
+  hint: 'The text says WWR is generally relevant for credit exposure but is LESS important for funding.',
+  explanation: 'WWR (wrong-way risk) is described as a concept generally applied to CREDIT exposure (linkage between default and portfolio value). For FUNDING, WWR is LESS important. Therefore option D is wrong — it is NOT equally important for both.',
+  optionExplains: [
+    'Wrong. This IS a stated difference (Section 19.4.2 — definition of value).',
+    'Wrong. This IS a stated difference — MPoR is shorter for funding than credit exposure.',
+    'Wrong. This IS a stated difference — aggregation level differs.',
+    'CORRECT. WWR is MORE important for credit exposure than for funding. Option D incorrectly claims equality.'
+  ],
+  trap: 'The WWR difference is subtle — students often assume risk factors apply equally across xVA components.'
+},
+
+// ── Q32: MCQ ──
+{
+  id:32, type:'mcq', difficulty:'hard',
+  topic:'Segregation vs Rehypothecation', page:'p.291',
+  text: 'Cash margin is received from a counterparty with NO WWR. Can it be rehypothecated? What benefits does it provide?',
+  options:[
+    'Cannot be rehypothecated; provides only counterparty risk reduction',
+    'Can be rehypothecated; provides counterparty risk reduction only',
+    'Can be rehypothecated; provides BOTH counterparty risk reduction AND funding benefit',
+    'Provides funding benefit only; counterparty risk reduction requires segregation'
+  ],
+  correct: 2,
+  hint: 'Cash is the most liquid form of margin. No segregation needed. No WWR means full counterparty risk benefit.',
+  explanation: 'Cash that does not need to be segregated, received without WWR: (1) Counterparty risk reduction — hold margin if counterparty defaults; (2) Funding benefit — cash can be rehypothecated (reused). Both benefits are maximized. This is the "ideal" margin scenario from Table 19.4.',
+  optionExplains: [
+    'Wrong. Cash CAN be rehypothecated.',
+    'Wrong. Cash provides funding benefit too, not just counterparty risk reduction.',
+    'CORRECT. Cash (no segregation, no WWR) provides both benefits.',
+    'Wrong. Both benefits are available with freely usable cash.'
+  ],
+  trap: 'Students confuse "segregated margin" (counterparty risk only, no funding benefit) with "free" cash margin (both benefits).'
+},
+
+// ── Q33: MCQ ──
+{
+  id:33, type:'mcq', difficulty:'hard',
+  topic:'Segregation Impact', page:'p.291–292',
+  text: 'Securities received as margin are SEGREGATED (cannot be rehypothecated). They provide:',
+  options:[
+    'Both counterparty risk reduction and funding benefit',
+    'Counterparty risk reduction only — no funding benefit since they cannot be reused',
+    'Funding benefit only — segregation enhances liquidity',
+    'Neither benefit — segregated margin is economically useless'
+  ],
+  correct: 1,
+  hint: 'Segregated = can\'t be reused. What happens to each benefit?',
+  explanation: 'Segregated margin: (1) CAN still be monetized in a default scenario → counterparty risk benefit ✓. (2) CANNOT be reused (rehypothecated) in non-default scenarios → NO funding benefit ✗. This is the key distinction used in Totem xVA pricing service to SEPARATE counterparty risk and funding costs.',
+  optionExplains: [
+    'Wrong. Segregated margin explicitly does NOT provide funding benefit.',
+    'CORRECT. Segregated = monetizable at default (CR benefit) but not reusable (no funding benefit).',
+    'Wrong. Segregated margin does NOT provide funding benefit — it can\'t be reused.',
+    'Wrong. It still provides counterparty risk reduction even when segregated.'
+  ],
+  trap: 'Students confuse "segregated for safety" (good for CR, bad for funding) with "free to use" (good for both). Segregation KILLS the funding benefit.'
+},
+
+// ── Q34: MCQ ──
+{
+  id:34, type:'mcq', difficulty:'hard',
+  topic:'Positive Exposure Formula with IM/VM', page:'p.292–293',
+  text: 'A portfolio value = 30, variation margin received (VMR) = 20, initial margin received (IMR, segregated) = 5. Using Eq. 19.10, positive exposure = max(value – VM – IMR, 0). What is positive exposure?',
+  options:['$30','$10','$5','$0'],
+  correct: 2,
+  hint: 'Apply the formula directly: max(30 – 20 – 5, 0) = ?',
+  explanation: 'Positive exposure = max(30 – 20 – 5, 0) = max(5, 0) = $5. The variation margin (20) and initial margin received (5) together reduce the exposure from 30 to 5.',
+  optionExplains: [
+    'Wrong. $30 ignores ALL margin — that\'s the uncollateralized exposure.',
+    'Wrong. $10 = 30 – 20 only (forgetting the IMR = 5).',
+    'CORRECT. max(30 – 20 – 5, 0) = max(5, 0) = 5.',
+    'Wrong. $0 would require VM + IMR ≥ 30 (i.e., 25 ≥ 30, which is false).'
+  ],
+  trap: 'Forgetting to subtract IMR from exposure is the most common calculation error. Both VM AND IM reduce positive exposure.'
+},
+
+// ── Q35: MCQ (Funding formula) ──
+{
+  id:35, type:'mcq', difficulty:'hard',
+  topic:'Funding Formula with IM', page:'p.293',
+  text: 'Portfolio value = 30, VM received = 20, initial margin POSTED bilaterally (IMP) = 5 (segregated). Using Eq. 19.11, Funding = value – VM + IMP. What is the funding amount?',
+  options:['$5','$15','$10','$25'],
+  correct: 1,
+  hint: 'Eq 19.11: Funding = value – VM + IMP. Note that IMP (posted IM) ADDS to funding cost.',
+  explanation: 'Funding = 30 – 20 + 5 = 15. The VM received (20) reduces funding need. The IM posted (5) creates an additional funding cost (you\'ve sent cash away that needs to be funded). Net funding need = $15.',
+  optionExplains: [
+    'Wrong. $5 = value – VM – IMP (treating IMP as reducing funding — wrong direction).',
+    'CORRECT. 30 – 20 + 5 = 15. IMP adds to funding cost.',
+    'Wrong. $10 = 30 – 20 (forgetting IMP entirely).',
+    'Wrong. $25 = 30 + 20 – 5 or similar wrong combination.'
+  ],
+  trap: 'IMP (posted IM) INCREASES funding need (you sent it away). Students often subtract it instead of adding.'
+},
+
+// ── Q36: MCQ ──
+{
+  id:36, type:'mcq', difficulty:'medium',
+  topic:'Variation Margin Character', page:'p.293',
+  text: 'Variation margin is NEVER segregated because:',
+  options:[
+    'Variation margin is always cash; cash need not be segregated',
+    'It is posted against a negative valuation and does not represent overcollateralization',
+    'Regulatory rules explicitly prohibit segregation of variation margin',
+    'It is only posted for short-dated contracts where segregation is impractical'
+  ],
+  correct: 1,
+  hint: 'Why would segregating VM be inappropriate? Think about what VM represents vs. initial margin.',
+  explanation: 'VM is posted to cover mark-to-market losses (negative value). It is NOT overcollateralization — it\'s exactly covering what is owed. Segregating VM would be illogical since it\'s owed value, not excess protection. This is different from IM, which IS overcollateralization and should be segregated.',
+  optionExplains: [
+    'Wrong. While VM is often cash, the reason it\'s not segregated is economic, not form.',
+    'CORRECT. VM covers existing negative value → not excess → no segregation needed.',
+    'Wrong. While regulators do distinguish, the underlying reason is economic, not just regulatory.',
+    'Wrong. Contract maturity is irrelevant to the segregation rationale.'
+  ],
+  trap: 'Students confuse VM (covers what you owe = exact match) with IM (overcollateral = needs protection).'
+},
+
+// ── Q37: True/False ──
+{
+  id:37, type:'truefalse', difficulty:'medium',
+  topic:'Recovery in Exposure Definition', page:'p.274',
+  text: 'TRUE or FALSE: The recovery value expected by a surviving party (as an unsecured creditor) is included in the standard definition of credit exposure.',
+  correct: false,
+  hint: 'What does the text say about recovery in the definition of exposure?',
+  explanation: 'FALSE. By convention, the unknown recovery value is NOT included in the definition of exposure. Positive exposure = max(value, 0) captures the full gross claim. Recovery is accounted for separately in CVA as LGD = 1 – recovery rate.',
+  wrongPart: 'Including recovery in exposure would make it "net loss" rather than "gross claim."',
+  trap: 'Students studying CVA often mix LGD (in the CVA formula) with the definition of exposure. Recovery is used in CVA pricing, NOT in defining exposure itself.'
+},
+
+// ── Q38: MCQ ──
+{
+  id:38, type:'mcq', difficulty:'medium',
+  topic:'Real-World vs Risk-Neutral', page:'p.277',
+  text: 'Exposure must be calculated under two different probability measures for different purposes. Which pair correctly maps measure to purpose?',
+  options:[
+    'Risk-neutral → risk management; real-world → xVA pricing',
+    'Real-world → risk management; risk-neutral → xVA pricing',
+    'Both use risk-neutral; real-world is never appropriate for derivatives',
+    'Both use real-world; risk-neutral only applies to option pricing'
+  ],
+  correct: 1,
+  hint: 'CVA/xVA pricing uses the "forward rate" world (risk-neutral). Risk limits and internal management uses historical probabilities (real-world).',
+  explanation: 'Real-world (physical) measure: used for risk management (PFE for limits, internal capital). Risk-neutral measure: used for pricing xVA (CVA, FVA). This creates potentially two different sets of calculations for the same exposure.',
+  optionExplains: [
+    'Wrong. The mapping is REVERSED.',
+    'CORRECT. Risk management = real-world; xVA pricing = risk-neutral.',
+    'Wrong. Real-world is used for risk management, not just theoretical exercises.',
+    'Wrong. Risk-neutral is essential for xVA pricing; real-world for risk management.'
+  ],
+  trap: 'Students assume "market practice" = "risk-neutral everywhere." For risk management (not pricing), real-world measures are used.'
+},
+
+// ── Q39: MCQ ──
+{
+  id:39, type:'mcq', difficulty:'hard',
+  topic:'Recursive Problem in xVA', page:'p.275',
+  text: 'ISDA documentation states the close-out amount "may include information related to the creditworthiness of the surviving party." This creates a recursive problem because:',
+  options:[
+    'ISDA documentation is legally binding, preventing any CVA adjustment at close-out',
+    'CVA charges (based on exposure) may themselves affect the close-out amount, which defines the exposure',
+    'Creditworthiness changes daily, making close-out calculation impossible',
+    'The surviving party\'s credit spread is already included in market prices'
+  ],
+  correct: 1,
+  hint: 'What does "close-out amount depends on CVA charges, which depend on close-out amount" mean logically?',
+  explanation: 'The recursive problem: Close-out amount → depends on CVA charges → CVA charges depend on exposure → exposure depends on close-out amount. It\'s circular! CVA charges the institution experiences (from replacing transactions) are based on exposure, but the close-out amount used to calculate that exposure may itself include those CVA charges. Market practice: use base value to break the recursion.',
+  optionExplains: [
+    'Wrong. ISDA docs create complexity, not prohibition.',
+    'CORRECT. Circular dependency: close-out → CVA → exposure → close-out. Recursive.',
+    'Wrong. Daily changes in creditworthiness are irrelevant to the definitional recursion.',
+    'Wrong. Market prices embedding credit spreads is a different (non-recursive) concept.'
+  ],
+  trap: 'Students understand recursion abstractly but miss the specific mechanism: xVA charges affecting the very exposure they\'re calculated from.'
+},
+
+// ── Q40: MCQ ──
+{
+  id:40, type:'mcq', difficulty:'medium',
+  topic:'Off-Market Portfolios', page:'p.287',
+  text: 'A bank has a large ITM portfolio (significantly positive value) with a counterparty. It adds a new transaction that has negative value (OTM). How does the new transaction affect the AGGREGATED EPE?',
+  options:[
+    'Aggregated EPE increases — new transaction adds positive exposure',
+    'Aggregated EPE decreases — the ENE of the new transaction offsets the portfolio\'s positive exposure',
+    'Aggregated EPE is unchanged — transactions with negative value contribute no EPE',
+    'Aggregated EPE increases by exactly the ENE of the new transaction'
+  ],
+  correct: 1,
+  hint: 'The negative-value new transaction has ENE. How does ENE interact with the ITM portfolio\'s positive exposure in netting?',
+  explanation: 'When an OTM (negative-value) new transaction is added to an ITM portfolio, its ENE OFFSETS the portfolio\'s positive exposure. In the aggregated netting, the negative values of the new transaction reduce scenarios where the portfolio has high positive value. Aggregated EPE DECREASES — even directional portfolios can benefit from netting.',
+  optionExplains: [
+    'Wrong. A new OTM transaction reduces, not increases, the aggregate EPE.',
+    'CORRECT. ENE of new transaction offsets ITM portfolio\'s positive exposure → lower aggregated EPE.',
+    'Wrong. Even OTM transactions affect aggregated EPE through the netting mechanism.',
+    'Wrong. The reduction is not an exact offset; it\'s more nuanced through the netting scenarios.'
+  ],
+  trap: 'Students think only positive-value transactions affect EPE. Negative-value transactions reduce EPE through netting — this is a subtle but exam-critical point.'
+},
+
+// ── Q41: MCQ ──
+{
+  id:41, type:'mcq', difficulty:'medium',
+  topic:'Bonds and Loans Exposure', page:'p.279',
+  text: 'How does the credit exposure of a FIXED-RATE BOND differ from a FLOATING-RATE LOAN in terms of uncertainty?',
+  options:[
+    'Both are deterministic and equal to notional — no difference',
+    'Bond has more uncertainty (interest rate risk changes value); loan exposure may decline due to prepayments',
+    'Loan has more uncertainty since floating rates vary; bond exposure is perfectly certain',
+    'Bond exposure grows with time; loan exposure is constant'
+  ],
+  correct: 1,
+  hint: 'Fixed rate bonds have duration risk. Floating loans have prepayment risk. Which creates MORE uncertainty?',
+  explanation: 'Both are approximately equal to notional (deterministic), but: Fixed-rate bond — interest rate movements change value → some additional uncertainty. Floating-rate loan — exposure may DECLINE over time due to prepayments. Neither is as complex as a derivative, but they differ in the nature of their uncertainty.',
+  optionExplains: [
+    'Wrong. There ARE differences in uncertainty between the two.',
+    'CORRECT. Bond: IR risk creates value uncertainty. Loan: prepayments may reduce exposure over time.',
+    'Wrong. The floating RATE doesn\'t directly cause MORE exposure uncertainty vs. the bond\'s IR sensitivity.',
+    'Wrong. Neither bond exposure "grows with time" in the standard sense.'
+  ],
+  trap: 'Students focus on interest rate risk and forget the prepayment factor for floating loans.'
+},
+
+// ── Q42: MCQ ──
+{
+  id:42, type:'mcq', difficulty:'medium',
+  topic:'Path Dependency in Exposure', page:'p.276',
+  text: 'Which of the following derivative features creates PATH DEPENDENCY in exposure calculation?',
+  options:[
+    'Fixed coupon payments on a vanilla bond',
+    'The maturity date of an FX forward',
+    'Termination agreements and exercise decisions that affect whether a contract is still "alive" at future dates',
+    'The notional amount of a vanilla interest rate swap'
+  ],
+  correct: 2,
+  hint: 'Path dependency means the exposure at time t depends on what happened BEFORE time t. Which feature involves decisions at earlier dates affecting future exposure?',
+  explanation: 'Termination agreements and exercise decisions (e.g., whether an option was exercised, whether a break clause triggered) create path dependency — the exposure at a future date depends on whether these events occurred earlier. In standard VaR, this can be ignored due to the short 10-day horizon.',
+  optionExplains: [
+    'Wrong. Fixed coupons are deterministic — no path dependency.',
+    'Wrong. FX forward maturity is fixed and doesn\'t create path dependency.',
+    'CORRECT. Exercise decisions and termination events create path dependency — whether a contract exists at time t depends on events at earlier times.',
+    'Wrong. Notional is fixed — it doesn\'t create path dependency.'
+  ],
+  trap: 'Students think "path dependency = stochastic." It\'s more specific: the STATE of the contract depends on the PATH of events, not just current market values.'
+},
+
+// ── Q43: True/False ──
+{
+  id:43, type:'truefalse', difficulty:'hard',
+  topic:'EPE > EFV', page:'p.277–278',
+  text: 'TRUE or FALSE: EPE is ALWAYS greater than or equal to EFV.',
+  correct: true,
+  hint: 'EPE zeros out negative values. EFV includes them. What effect does zero-flooring have on the average?',
+  explanation: 'TRUE. EPE = average of max(value, 0) across scenarios. EFV = average of value across all scenarios. Since max(value, 0) ≥ value always (zero-flooring cannot decrease the value), the average of max(value, 0) ≥ average of value. EPE ≥ EFV always.',
+  wrongPart: 'N/A — it is true.',
+  trap: 'Students think of EPE as "only counting positive values so it should be compared to EFV on a conditional basis." The KEY is the denominator — EPE includes ALL scenarios (including those where value is negative, contributing 0).'
+},
+
+// ── Q44: MCQ ──
+{
+  id:44, type:'mcq', difficulty:'hard',
+  topic:'Loan Equivalent', page:'p.279',
+  text: 'Average EPE is called a "loan equivalent." Which regulatory purpose does this serve?',
+  options:[
+    'It determines the haircut applied to securities collateral',
+    'It provides a basis for assessing regulatory capital for counterparty credit risk',
+    'It defines the threshold at which margin calls are triggered',
+    'It calibrates the CVA volatility charge under Basel III'
+  ],
+  correct: 1,
+  hint: 'The text says "EPE has a strong theoretical basis for assessing regulatory capital."',
+  explanation: 'Average EPE (the loan equivalent) is the key input for regulatory capital calculations for counterparty credit risk. Treating uncertain exposures as equivalent to a loan of the average EPE amount is the regulatory framework basis. This is discussed further in Section 13.2.3.',
+  optionExplains: [
+    'Wrong. Haircuts are determined by security type and volatility, not EPE.',
+    'CORRECT. Average EPE → loan equivalent → regulatory capital basis.',
+    'Wrong. Thresholds are CSA parameters, not derived from average EPE.',
+    'Wrong. CVA volatility charge uses different inputs (CVA sensitivities, not average EPE directly).'
+  ],
+  trap: 'Students often know EPE is used "somewhere in regulation" but can\'t pin down the specific capital context.'
+},
+
+// ── Q45: MCQ ──
+{
+  id:45, type:'mcq', difficulty:'medium',
+  topic:'EFV at Time Zero', page:'p.277',
+  text: 'What is EFV at time zero, by definition?',
+  options:[
+    'Zero, since there is no uncertainty at inception of a par swap',
+    'The current value of the portfolio',
+    'The expected positive exposure at time zero',
+    'The notional of the contract'
+  ],
+  correct: 1,
+  hint: 'EFV = expected future value. At time zero, the "future" is right now. What is the value right now?',
+  explanation: 'EFV at t=0 is defined as the current value of the portfolio. There is no uncertainty about the current value (it\'s observable). "Expected future value at time zero = current value" is explicitly stated.',
+  optionExplains: [
+    'Wrong. A par swap has current value = 0, which is also EFV(0) = 0, but this isn\'t the general definition. For a non-par portfolio, EFV(0) ≠ 0.',
+    'CORRECT. EFV(t=0) = current value by definition.',
+    'Wrong. EPE at t=0 = max(current value, 0), which is different from EFV unless value > 0.',
+    'Wrong. Notional is a contract parameter, not the value of the portfolio.'
+  ],
+  trap: 'For a PAR swap at inception, value = 0, so EFV(0) = 0 (coincidentally). But EFV(0) = current value IN GENERAL, not always zero.'
+},
+
+// ── Q46: MCQ ──
+{
+  id:46, type:'mcq', difficulty:'hard',
+  topic:'Asymmetric Margin Agreement', page:'p.277',
+  text: 'A one-way margin agreement requires only the COUNTERPARTY to post margin (favorable terms for Bank A). How does this affect EFV of Bank A\'s portfolio over time?',
+  options:[
+    'EFV is reduced because margin received lowers the value of claims',
+    'EFV is higher because favorable margin terms reduce expected outflows to the counterparty',
+    'EFV is unchanged — margin agreements don\'t affect expected value',
+    'EFV becomes zero because margin perfectly hedges the exposure'
+  ],
+  correct: 1,
+  hint: 'One-way favorable margin = you receive margin but don\'t post. This means your net position is better than a symmetric arrangement.',
+  explanation: 'Asymmetric margin agreements (one-way in your favor) mean you receive margin without posting — reducing your net outflow obligation. This shifts EFV HIGHER compared to a symmetric arrangement, reflecting the favorable economic position. The text explicitly lists asymmetric margin as a reason EFV deviates from current value.',
+  optionExplains: [
+    'Wrong. Receiving margin reduces EXPOSURE (counterparty risk) not the expected VALUE (EFV).',
+    'CORRECT. Favorable margin terms → better expected position → higher EFV.',
+    'Wrong. Margin agreements explicitly affect EFV (one of the three reasons listed).',
+    'Wrong. Margins reduce but don\'t eliminate EFV; perfect hedging is theoretical.'
+  ],
+  trap: 'Students confuse the effect of margin on EXPOSURE (reduces it) vs. the effect on EFV (favorable terms increase it).'
+},
+
+// ── Q47: MCQ ──
+{
+  id:47, type:'mcq', difficulty:'medium',
+  topic:'PFE Confidence Level', page:'p.277',
+  text: 'PFE at 99% confidence means the exposure will EXCEED this level with probability of:',
+  options:['99%','50%','1%','0.1%'],
+  correct: 2,
+  hint: 'PFE is a quantile measure. 99% confidence = exceed with probability = (100 – 99)%.',
+  explanation: 'PFE at confidence level C% means exposure exceeds PFE with probability (100 – C)%. At 99% confidence, probability of exceeding = 1%. This is directly analogous to VaR at 99% confidence.',
+  optionExplains: [
+    'Wrong. 99% is the probability of NOT exceeding it.',
+    'Wrong. 50% would be the median (50th percentile), not the 99th.',
+    'CORRECT. 100% – 99% = 1% probability of exceeding PFE(99%).',
+    'Wrong. 0.1% would correspond to 99.9% confidence.'
+  ],
+  trap: 'Students confuse confidence level with exceedance probability — direct analog to VaR interpretation.'
+},
+
+// ── Q48: MCQ ──
+{
+  id:48, type:'mcq', difficulty:'hard',
+  topic:'ENE Sensitivity to Volatility', page:'p.278–279',
+  text: 'When the standard deviation of future portfolio value is DOUBLED (from 2 to 4), ENE increases by nearly FIVE times. Why, using the options analogy?',
+  options:[
+    'ENE is like a deep ITM put — quadrupling variance quadruples value',
+    'ENE represents an OUT-OF-THE-MONEY position, so higher vol has an outsized impact (like OTM options gaining from vol)',
+    'ENE is proportional to vol squared, so doubling vol quadruples ENE',
+    'Doubling vol doubles the expected shortfall, and ENE equals expected shortfall'
+  ],
+  correct: 1,
+  hint: 'With mean > 0, ENE is in the far left tail — what is the analogy to option moneyness?',
+  explanation: 'ENE represents a position that is "out of the money" — mean > 0 means few scenarios have negative values. For OTM options, volatility has DISPROPORTIONATE impact (vega is high for OTM options because higher vol makes the OTM scenario achievable). Same logic: higher vol dramatically increases the probability/magnitude of negative values → ENE jumps ~5x. Not merely proportional.',
+  optionExplains: [
+    'Wrong. ENE is OTM, not ITM. ITM options are relatively insensitive to vol.',
+    'CORRECT. OTM options (and OTM ENE) exhibit high vega — vol changes have outsized impact.',
+    'Wrong. ENE is not simply proportional to vol² — the relationship is more complex due to the zero-floor.',
+    'Wrong. ENE ≈ Expected Shortfall in some contexts, but the 5x is specifically about OTM vega behavior.'
+  ],
+  trap: 'Students compute linear scaling (2× vol = 2× ENE) missing the OTM convexity effect. The example shows 2× vol ≈ 5× ENE.'
+},
+
+// ── Q49: MCQ ──
+{
+  id:49, type:'mcq', difficulty:'medium',
+  topic:'Drift in Exposure Quantification', page:'p.276',
+  text: 'In VAR-type models, the drift of market variables can be IGNORED. Why is drift RELEVANT for exposure quantification?',
+  options:[
+    'Drift changes the volatility of returns, making VaR underestimate tail risk',
+    'Exposure is calculated over long horizons where drift compounds significantly and cannot be neglected',
+    'Drift only affects the discount rate, not future exposures',
+    'VaR regulators require drift inclusion for models above 10-day horizon'
+  ],
+  correct: 1,
+  hint: 'For a 10-day VaR, drift over 10 days is tiny. For a 5-year swap, drift over 5 years is... how significant?',
+  explanation: 'For short VaR horizons (10 days), drift is negligible compared to volatility. For exposure over years, drift accumulates significantly — creating a material expected level (EFV) that dominates the distribution. For a cross-currency swap with large rate differentials, drift over 5–10 years creates enormous expected exposure.',
+  optionExplains: [
+    'Wrong. Drift doesn\'t change volatility — they are separate parameters.',
+    'CORRECT. Long horizons → drift compounds → cannot be ignored (unlike 10-day VaR).',
+    'Wrong. Drift affects future EXPECTED VALUES directly, not just discount rates.',
+    'Wrong. This is not a specific regulatory rule — it\'s an economic reality of long horizons.'
+  ],
+  trap: 'Students trained in VaR often default to "drift is immaterial." This is horizon-specific — true for 10 days, false for 10 years.'
+},
+
+// ── Q50: MCQ ──
+{
+  id:50, type:'mcq', difficulty:'hard',
+  topic:'CCS as Combination Profile', page:'p.283–284',
+  text: 'A cross-currency swap is characterized as a combination of which two instruments, and which component typically dominates the EPE?',
+  options:[
+    'Interest rate swap + bond; IRS dominates',
+    'FX forward + interest rate swap; FX forward component dominates due to high FX vol',
+    'FX option + bond; FX option dominates',
+    'Two interest rate swaps in different currencies; they have equal exposure'
+  ],
+  correct: 1,
+  hint: 'CCS = IRS (interest rate payments) + FX forward (notional exchange at maturity). Which has higher volatility?',
+  explanation: 'A CCS is a combination of an IRS and an FX forward (exchange of notionals at maturity). The FX forward component DOMINATES because: (1) FX volatility is much higher than IR volatility, and (2) the final notional exchange is a large lump-sum FX exposure. The IRS component (interest payments) contributes less to total EPE.',
+  optionExplains: [
+    'Wrong. A bond is not a component — it\'s the IRS and FX forward.',
+    'CORRECT. CCS = IRS + FX forward; FX forward dominates EPE due to high FX vol.',
+    'Wrong. Options are not a component of a standard CCS.',
+    'Wrong. Two IRS in different currencies ≠ CCS; the notional exchange is the FX forward component.'
+  ],
+  trap: 'Students who think "CCS = big IRS" miss the dominant FX forward component from the notional exchange.'
+},
+
+// ── Q51-100: Continue with more questions ──
+
+{
+  id:51, type:'truefalse', difficulty:'hard',
+  topic:'Aggregated EPE Inequality', page:'p.286–287',
+  text: 'TRUE or FALSE: The aggregated EPE of a portfolio can NEVER be greater than the sum of the EPEs of the individual transactions.',
+  correct: true,
+  hint: 'This follows mathematically from max(Σvalue_i, 0) ≤ Σmax(value_i, 0)',
+  explanation: 'TRUE. Mathematically: max(ΣV_i, 0) ≤ Σmax(V_i, 0). The aggregated portfolio clips at zero ONCE, while summing individual EPEs clips each transaction at zero separately. The sum of individual clipped values ≥ clip of summed values.',
+  wrongPart: 'N/A — true.',
+  trap: 'This seems counterintuitive — aggregation can only REDUCE (or maintain) EPE, never increase it beyond the sum.'
+},
+
+{
+  id:52, type:'mcq', difficulty:'medium',
+  topic:'MPoR and Margin', page:'p.289',
+  text: 'The Margin Period of Risk (MPoR) captures which specific risk in a collateralized derivatives book?',
+  options:[
+    'The risk of wrong-way correlation between default and exposure',
+    'The time delay between the last margin posting and when exposure is fully closed out after counterparty default',
+    'The risk of margin volatility reducing the value of non-cash collateral',
+    'The legal risk of netting enforceability in different jurisdictions'
+  ],
+  correct: 1,
+  hint: 'MPoR = the period during which you cannot call more margin because the counterparty has defaulted.',
+  explanation: 'MPoR is the period from the last successful margin exchange to when the portfolio is replaced/closed after default. During this window, exposure is unhedged by margin — and market moves can increase it. This is the "true period of risk" with respect to margin transfer.',
+  optionExplains: [
+    'Wrong. Wrong-way risk is separate from MPoR.',
+    'CORRECT. MPoR = delay from last margin to close-out after default.',
+    'Wrong. Non-cash margin volatility is one of the three imperfections, but it\'s not what MPoR captures.',
+    'Wrong. Netting enforceability is a legal risk, separate from MPoR.'
+  ],
+  trap: 'Students confuse MPoR (credit exposure context) with the normal operational margin posting frequency (which is shorter and relevant for FVA).'
+},
+
+{
+  id:53, type:'mcq', difficulty:'hard',
+  topic:'FVA vs CVA MPoR', page:'p.290',
+  text: 'For a COLLATERALIZED derivative, the FVA may be considered ZERO even though the CVA is NOT zero. Why?',
+  options:[
+    'FVA applies only to uncollateralized derivatives; CVA applies to all',
+    'For funding, the relevant margin delay is the normal posting frequency (much shorter than MPoR), so funding exposure approaches zero',
+    'CVA and FVA use different recovery rates, making CVA nonzero even when FVA is zero',
+    'FVA is zero because collateralized derivatives have no funding costs'
+  ],
+  correct: 1,
+  hint: 'MPoR (for credit) assumes counterparty default — a significant delay. Funding margin frequency is normal operations — how does this affect the gap?',
+  explanation: 'For FUNDING: margin is posted in normal (non-default) operations, so the delay in margin is the normal posting frequency (1–2 days). This makes funding exposure ≈ 0. For CREDIT (CVA): MPoR assumes counterparty default, meaning the delay between last margin and close-out is the full MPoR (10+ days). This residual exposure generates CVA. Hence, a collateralized derivative has CVA ≠ 0 but FVA ≈ 0.',
+  optionExplains: [
+    'Wrong. FVA can be nonzero for collateralized derivatives in theory; the question is WHEN it approximates zero.',
+    'CORRECT. Shorter effective margin delay for funding → near-zero funding exposure → FVA ≈ 0.',
+    'Wrong. Recovery rates are about LGD; this doesn\'t explain the CVA/FVA difference here.',
+    'Wrong. Collateralized derivatives can still have small funding costs in theory.'
+  ],
+  trap: 'Students know MPoR reduces CVA but don\'t realize the DIFFERENT delay assumptions for CVA vs FVA are why FVA ≈ 0 for collateralized trades.'
+},
+
+{
+  id:54, type:'mcq', difficulty:'medium',
+  topic:'Threshold in CSA', page:'p.289',
+  text: 'A CSA threshold of $5M means:',
+  options:[
+    'No margin is called until the portfolio value exceeds $5M, effectively capping exposure at approximately $5M',
+    'Margin is always equal to exactly $5M, regardless of portfolio value',
+    'Portfolio value must reach $5M before the contract is valid',
+    'Minimum transfer amount is $5M, below which no margin is called'
+  ],
+  correct: 0,
+  hint: 'Threshold = the unsecured credit line extended. Margin is only called ABOVE the threshold.',
+  explanation: 'A threshold is the amount below which NO margin is called — effectively an unsecured credit extension. For a $5M threshold, exposure up to $5M is uncollateralized. This APPROXIMATELY caps EPE at the threshold level (partially collateralized effect). Above $5M, margin is called for the excess.',
+  optionExplains: [
+    'CORRECT. No margin until value > $5M → uncollateralized up to $5M → EPE capped ≈ $5M.',
+    'Wrong. Margin = exactly $5M would be a fixed margin post, not a threshold.',
+    'Wrong. Portfolio value reaching $5M is not a contract validity condition.',
+    'Wrong. That describes the Minimum Transfer Amount (MTA), not the threshold.'
+  ],
+  trap: 'Students confuse Threshold (unsecured credit line, no margin below it) with Minimum Transfer Amount (minimum size of individual margin calls).'
+},
+
+{
+  id:55, type:'mcq', difficulty:'hard',
+  topic:'Counterparty Posting Own Bonds', page:'p.292',
+  text: 'A counterparty posts its OWN bonds as collateral (rehypothecatable). This provides which COMBINATION of benefits?',
+  options:[
+    'Both full counterparty risk reduction AND full funding benefit',
+    'Questionable counterparty risk reduction (bonds worthless when needed at default) but a funding benefit (if rehypothecatable)',
+    'Full counterparty risk reduction but no funding benefit',
+    'No benefit at all — own bonds as collateral is economically meaningless'
+  ],
+  correct: 1,
+  hint: 'Own bonds = what happens to them exactly WHEN the counterparty defaults?',
+  explanation: 'Own bonds as collateral: they will be in DEFAULT when needed (counterparty defaults → bonds default too) → limited/questionable CR benefit. However, if rehypothecatable before default, they provide a FUNDING benefit. This is the classic SSA behavior: posting own bonds reduces the bank\'s funding obligation even though CR protection is questionable.',
+  optionExplains: [
+    'Wrong. CR benefit is QUESTIONABLE (bonds worthless at default).',
+    'CORRECT. Questionable CR (bonds default at same time) + funding benefit (if rehypothecatable).',
+    'Wrong. Funding benefit IS provided if rehypothecatable.',
+    'Wrong. Funding benefit is real and economically meaningful.'
+  ],
+  trap: 'Students assume "collateral = CR protection always." Own bonds = CR protection goes away exactly when you need it most.'
+},
+
+{
+  id:56, type:'mcq', difficulty:'medium',
+  topic:'FX Forward vs IRS Profile Shape', page:'p.279–280',
+  text: 'The key structural DIFFERENCE between an FX forward exposure profile and an IRS exposure profile is:',
+  options:[
+    'FX forward has zero exposure at maturity; IRS has maximum exposure at maturity',
+    'FX forward monotonically increases to maturity (√t); IRS peaks at T/3 then falls due to cash flow rolloff',
+    'FX forward EPE exceeds IRS EPE for all maturities',
+    'IRS exposure is deterministic; FX forward exposure is stochastic'
+  ],
+  correct: 1,
+  hint: 'One is √t (pure accumulation of uncertainty), the other is (T–t)√t (uncertainty vs remaining maturity).',
+  explanation: 'FX forward: single settlement at maturity → uncertainty builds monotonically → √t profile → maximum at T. IRS: periodic cash flow settlements + declining remaining maturity → (T–t)√t profile → hump-shaped → maximum at T/3. The rolloff of payments in IRS creates the downward slope, absent in the forward.',
+  optionExplains: [
+    'Wrong. FX forward has MAXIMUM at maturity (not zero). IRS has ZERO at maturity (contract ends).',
+    'CORRECT. This is the precise structural distinction between the two profiles.',
+    'Wrong. For similar instruments, relative EPE levels depend on specific vols, notionals, etc.',
+    'Wrong. Both are stochastic — IRS uncertainty comes from rate moves.'
+  ],
+  trap: 'Students get confused about which has zero at maturity. IRS: zero at T (all payments done). FX forward: maximum at T (uncertainty peaks).'
+},
+
+{
+  id:57, type:'mcq', difficulty:'hard',
+  topic:'Payer vs Receiver Swap EFV', page:'p.281',
+  text: 'For a PAYER swap (paying fixed, receiving floating) under an upward-sloping yield curve, which statement about EFV is CORRECT?',
+  options:[
+    'EFV is negative — payer is paying a high fixed rate early on',
+    'EFV is zero — all par swaps have zero EFV by definition',
+    'EFV is positive — rising expected floating receipts exceed fixed payments over time',
+    'EFV is indeterminate without knowing the current level of rates'
+  ],
+  correct: 2,
+  hint: 'Upward curve → forward rates > spot rates → expected floating receipts RISE. For the payer (receiving floating), what does this mean?',
+  explanation: 'For a payer swap: paying fixed (deterministic) and receiving floating. With upward-sloping yield curve, expected floating receipts INCREASE over time (forward rates > current rates). Later in the swap, expected receipts > fixed payments → positive expected net cash flows → POSITIVE EFV. The payer benefits from the rising rate expectation.',
+  optionExplains: [
+    'Wrong. Early on, fixed rate may exceed floating, but EFV captures the whole curve — net positive for payer.',
+    'Wrong. Par swaps start at value = 0, but EFV at FUTURE times ≠ 0 due to drift.',
+    'CORRECT. Rising expected floating rates → positive drift for payer → positive EFV.',
+    'Wrong. The shape of the yield curve (upward sloping) is the relevant factor, not the absolute level.'
+  ],
+  trap: 'The par swap starts at value = 0 but EFV ≠ 0 over time. The yield curve SHAPE creates drift in EFV.'
+},
+
+{
+  id:58, type:'truefalse', difficulty:'medium',
+  topic:'EPE is Never Negative', page:'p.278',
+  text: 'TRUE or FALSE: EPE can be negative if most scenarios have negative future portfolio values.',
+  correct: false,
+  hint: 'EPE = average of max(value, 0) across all scenarios. Can max(value, 0) ever be negative?',
+  explanation: 'FALSE. EPE = average of max(value, 0). Since max(value, 0) ≥ 0 for ALL values (by definition), the average is also ≥ 0. EPE is ALWAYS non-negative. ENE is always non-positive. EFV can be either positive or negative.',
+  wrongPart: 'EPE cannot be negative — the max(·,0) function ensures this.',
+  trap: 'Students confuse EPE with EFV. EFV can be negative (if average value is negative). EPE never can be.'
+},
+
+{
+  id:59, type:'mcq', difficulty:'hard',
+  topic:'Threshold vs MTA', page:'p.289',
+  text: 'The MINIMUM TRANSFER AMOUNT (MTA) differs from a THRESHOLD in that:',
+  options:[
+    'The MTA sets the minimum portfolio value before the contract is legal',
+    'The MTA is the smallest margin call allowed — it prevents operationally burdensome tiny calls',
+    'The MTA represents the maximum collateral that can be posted at any time',
+    'The threshold and MTA are interchangeable terms for the same concept'
+  ],
+  correct: 1,
+  hint: 'Think about WHY you\'d set a minimum size for a margin call — operational efficiency!',
+  explanation: 'MTA is the minimum size of a margin call. Below the MTA, no margin is transferred (operational cost exceeds benefit). This creates a small residual uncollateralized exposure. A THRESHOLD is the amount below which NO margin is owed regardless of size. Together they determine when and how much margin is called.',
+  optionExplains: [
+    'Wrong. MTA has nothing to do with contract validity.',
+    'CORRECT. MTA prevents tiny, operationally burdensome margin calls.',
+    'Wrong. There is no standard maximum collateral concept called MTA.',
+    'Wrong. They are different concepts with different mechanisms.'
+  ],
+  trap: 'Students who haven\'t drilled CSA mechanics confuse threshold and MTA. Remember: threshold = no margin owed at all; MTA = margin is owed but minimum transfer size.'
+},
+
+{
+  id:60, type:'mcq', difficulty:'hard',
+  topic:'Overcollateralization Effect', page:'p.289',
+  text: 'Overcollateralization can occur even in a well-functioning margin agreement. When does this happen and what is its EPE effect?',
+  options:[
+    'Overcollateralization occurs when counterparty credit quality deteriorates — EPE spikes',
+    'Due to granularity effects (MTA, thresholds), posted margin briefly EXCEEDS exposure — temporarily reducing EPE below zero-equivalent',
+    'Overcollateralization only occurs with initial margin — variation margin never overcollateralizes',
+    'Overcollateralization means EPE permanently drops to zero'
+  ],
+  correct: 1,
+  hint: 'Margins move in discrete amounts (MTA). Can the margin amount temporarily overshoot the exposure?',
+  explanation: 'Because margins move in discrete increments governed by MTA and thresholds, they don\'t continuously track exposure. After a margin call is satisfied (exposure drops below MTA again), margin may briefly exceed exposure → overcollateralization → EPE drops below what uncollateralized would show. This is a temporary, granularity effect.',
+  optionExplains: [
+    'Wrong. Credit quality deterioration doesn\'t cause overcollateralization.',
+    'CORRECT. Granularity of margin posting → brief overcollateralization → EPE reduction below "strongly collateralized" baseline.',
+    'Wrong. VM can also temporarily overcollateralize due to discrete posting mechanics.',
+    'Wrong. Overcollateralization is temporary; EPE won\'t permanently stay at zero.'
+  ],
+  trap: 'Students think overcollateralization is always planned (IM provision). Temporary overcollateralization from granularity is an important secondary effect.'
+},
+
+{
+  id:61, type:'mcq', difficulty:'medium',
+  topic:'Aggregation Level', page:'p.277',
+  text: 'For counterparty risk purposes (CVA), what is the appropriate aggregation level?',
+  options:[
+    'Each transaction individually — CVA is calculated per trade',
+    'All transactions at the legal entity level (entire firm)',
+    'All transactions under a single netting agreement (netting set)',
+    'All transactions globally across all counterparties'
+  ],
+  correct: 2,
+  hint: 'CVA uses netting and close-out — what determines which transactions can be netted?',
+  explanation: 'For CVA, the netting set is the aggregation level. A netting set = all transactions under a single netting agreement. Close-out netting operates at this level — only transactions within the same netting set can offset. There may be more than one netting set with a given counterparty.',
+  optionExplains: [
+    'Wrong. Individual trade CVA misses netting benefits.',
+    'Wrong. Netting is legally constrained to specific agreements, not all transactions with a legal entity.',
+    'CORRECT. Netting set = transactions under one netting agreement = the correct aggregation unit for CVA.',
+    'Wrong. Cross-counterparty aggregation is not part of CVA calculation.'
+  ],
+  trap: 'Students conflate "legal entity" (counterparty) with "netting set." One counterparty can have multiple netting sets.'
+},
+
+{
+  id:62, type:'truefalse', difficulty:'medium',
+  topic:'Drift in Long-Horizon Exposure', page:'p.276–277',
+  text: 'TRUE or FALSE: For exposure quantification (unlike VaR), the drift (trend) of market variables is relevant because long time horizons allow drift to accumulate significantly.',
+  correct: true,
+  hint: 'In VaR (10 days), drift is negligible. In exposure (5+ years)...',
+  explanation: 'TRUE. For VaR (10-day horizon), drift is typically much smaller than volatility and can be safely ignored. For exposure over years, drift compounds and becomes material — creating the expected future value (EFV) component. This is a key distinction explicitly drawn in the text.',
+  wrongPart: 'N/A — the statement is correct.',
+  trap: 'Students trained primarily in VaR might default to "drift doesn\'t matter for risk models." This is horizon-specific — wrong for exposure.'
+},
+
+{
+  id:63, type:'mcq', difficulty:'hard',
+  topic:'Base Value vs Actual Value', page:'p.275',
+  text: 'When does use of "base value" for exposure quantification (vs. actual close-out value) create errors, and are these errors considered material?',
+  options:[
+    'Errors are always material — base value should never be used for accurate xVA',
+    'Errors arise from excluding xVA components and documentation complexity, but are generally considered small in practice',
+    'Errors only arise for transactions over 10 years in maturity',
+    'Base value and actual close-out value are always identical for major currencies'
+  ],
+  correct: 1,
+  hint: 'What does the text say about how large the errors from using base value are?',
+  explanation: 'Using base value avoids the recursive problem but ignores xVA components that documentation (ISDA) includes in close-out. The text explicitly states: "errors in doing this are usually relatively small." Base value use is market practice precisely because it\'s tractable and the errors are manageable.',
+  optionExplains: [
+    'Wrong. Market practice IS to use base value — it\'s acceptable and standard.',
+    'CORRECT. Errors exist but are generally small — this is the market consensus.',
+    'Wrong. The issue is not maturity-dependent in this specific way.',
+    'Wrong. Base value and actual close-out differ for all currencies/maturities where xVA components are nonzero.'
+  ],
+  trap: 'Students who study the recursive problem in detail sometimes overstate its practical impact. The text explicitly notes errors are "usually relatively small."'
+},
+
+{
+  id:64, type:'mcq', difficulty:'medium',
+  topic:'CCS Maturity Effect', page:'p.284',
+  text: 'For cross-currency swaps, longer maturities have SLIGHTLY more risk than shorter maturities. The PRIMARY reason for "slightly" (not dramatically) more risk is:',
+  options:[
+    'Interest rate volatility decreases with maturity for CCS',
+    'The dominant FX forward component already captures most of the exposure regardless of maturity; the extra risk from longer maturity comes mainly from more interest rate payments',
+    'Longer maturities require more initial margin, reducing net exposure',
+    'CCS exposure is capped by regulation at a fixed percentage regardless of maturity'
+  ],
+  correct: 1,
+  hint: 'In a CCS, the huge FX forward (notional exchange) is present for ALL maturities. What increases with longer maturity?',
+  explanation: 'The dominant driver of CCS exposure is the FX forward component (notional exchange at maturity) — present for ALL maturities. The incremental risk from longer maturity comes from more interest rate payments, which is the smaller component. Hence, longer maturities add "slightly" more risk (via interest payments) but the FX component already dominates.',
+  optionExplains: [
+    'Wrong. Interest rate volatility doesn\'t decrease with maturity in this context.',
+    'CORRECT. FX forward (dominant) present for all maturities; extra IR payments add slightly more for longer maturities.',
+    'Wrong. IM requirements don\'t change the EPE structure in this way.',
+    'Wrong. No such regulatory cap on CCS exposure exists.'
+  ],
+  trap: 'Students think maturity scales all risk proportionally. For CCS, the notional exchange is the dominant exposure regardless of maturity length.'
+},
+
+{
+  id:65, type:'mcq', difficulty:'hard',
+  topic:'ENE Calculation', page:'p.278',
+  text: 'Using the same five scenarios (+70, +50, +30, –10, –30), each equally probable, what is the ENE?',
+  options:['–8','–22','+8','–16'],
+  correct: 0,
+  hint: 'ENE = average of min(value, 0) across all 5 scenarios.',
+  explanation: 'ENE = (min(70,0) + min(50,0) + min(30,0) + min(–10,0) + min(–30,0)) / 5 = (0 + 0 + 0 + (–10) + (–30)) / 5 = –40/5 = –8. Only the negative scenarios contribute; positive scenarios contribute 0.',
+  optionExplains: [
+    'CORRECT. –40/5 = –8. Only –10 and –30 contribute as negatives; others contribute 0.',
+    'Wrong. –22 would include all values (that\'s close to EFV divided differently) — not ENE.',
+    'Wrong. ENE is always non-positive — it cannot be +8.',
+    'Wrong. –16 would arise from summing all negative values (–10 + –30 = –40, but –40/2.5 is not the calculation).'
+  ],
+  trap: 'ENE uses the same ALL-SCENARIO denominator (5) as EPE — you don\'t divide only by the number of negative scenarios.'
+},
+
+{
+  id:66, type:'mcq', difficulty:'medium',
+  topic:'Partial Collateralization', page:'p.289',
+  text: 'Under partial collateralization (nonzero threshold), the threshold approximately acts as:',
+  options:[
+    'A floor below which EPE cannot fall',
+    'A cap on exposure — EPE is approximately capped at the threshold level',
+    'A trigger for additional initial margin posting',
+    'The minimum close-out amount agreed in the netting agreement'
+  ],
+  correct: 1,
+  hint: 'If no margin is called below the threshold, what is the maximum uncollateralized exposure?',
+  explanation: 'Below the threshold, no margin is called — the exposure runs uncollateralized. For exposure above the threshold, margin is called and exposure is reduced. The net effect: EPE is approximately CAPPED at the threshold level. This is the "partially collateralized" curve in Figure 19.23 (referenced conceptually).',
+  optionExplains: [
+    'Wrong. Threshold caps exposure above it, not floors it.',
+    'CORRECT. Threshold ≈ cap on EPE. Below threshold: uncollateralized. Above: margined.',
+    'Wrong. Threshold is not an IM trigger in this context.',
+    'Wrong. Close-out amounts are determined by ISDA documentation, not the threshold.'
+  ],
+  trap: 'Students confuse floor (minimum) with cap (maximum). Threshold CAPS EPE from above, approximately.'
+},
+
+{
+  id:67, type:'truefalse', difficulty:'hard',
+  topic:'WWR in CDS', page:'p.285',
+  text: 'TRUE or FALSE: Credit derivatives such as CDS are generally easy to characterize for exposure because their payoffs are continuous and well-behaved.',
+  correct: false,
+  hint: 'What does the text say about CDS payoff structure?',
+  explanation: 'FALSE. Credit derivatives are HARD to characterize for exposure because of (1) wrong-way risk — linkage between counterparty default and the credit event, and (2) DISCRETE payoffs — the credit event creates a jump, making the PFE profile highly sensitive to the confidence level and potentially misleading.',
+  wrongPart: 'The statement says "continuous and well-behaved" — the opposite is true. CDS have DISCRETE jump payoffs.',
+  trap: 'Students who understand CDS pricing (continuous spread dynamics) confuse this with exposure profiles, which are discontinuous due to the default jump.'
+},
+
+{
+  id:68, type:'mcq', difficulty:'hard',
+  topic:'SSA Two-Way Margins', page:'p.292',
+  text: 'Sovereigns/Supranationals (SSAs) have traditionally had ONE-WAY CSAs (only bank posts margin). The move to TWO-WAY margins is primarily driven by:',
+  options:[
+    'Regulatory requirements compelling SSAs to post initial margin',
+    'Banks\' increased sensitivity to FUNDING COSTS from large one-way margin obligations',
+    'SSAs wanting to increase counterparty risk on their derivative portfolios',
+    'New ISDA documentation that automatically converts one-way to two-way CSAs'
+  ],
+  correct: 1,
+  hint: 'Why would a bank want the SSA (typically triple-A) to start posting margin? What cost has increased?',
+  explanation: 'One-way CSAs (only bank posts) create HUGE funding obligations for banks (bank must post margin it doesn\'t receive back). As funding costs have risen and banks became more funding-sensitive, the cost of one-way arrangements was reflected in HIGHER SWAP PRICES for SSAs. To achieve pricing advantage, SSAs moved to two-way margins.',
+  optionExplains: [
+    'Wrong. Regulatory requirements (bilateral margin rules) play a role but aren\'t the PRIMARY driver described here.',
+    'CORRECT. Banks\' funding cost sensitivity → reflected in swap prices → SSAs found two-way margins economically beneficial.',
+    'Wrong. SSAs moved to two-way to REDUCE, not increase, their counterparty risk.',
+    'Wrong. No such automatic conversion mechanism exists in standard ISDA docs.'
+  ],
+  trap: 'Students focus on counterparty risk (SSAs are triple-A, so risk is minimal). The driver is FUNDING cost, not credit risk.'
+},
+
+{
+  id:69, type:'mcq', difficulty:'medium',
+  topic:'Vanilla Option Exposure', page:'p.280',
+  text: 'A vanilla European CALL option with upfront premium has exposure profile most similar to:',
+  options:[
+    'An interest rate swap — peaked hump shape',
+    'An FX forward — square-root-of-time monotonically increasing',
+    'A bond — approximately constant at notional',
+    'A CDS — flat then sudden jump'
+  ],
+  correct: 1,
+  hint: 'Options with upfront premium have a single payoff at expiry, similar to what other instrument?',
+  explanation: 'A vanilla option with upfront premium has a single payoff at expiry (similar to a forward\'s single settlement). With similar market assumptions (iid returns), the exposure follows the √t rule — monotonically increasing to expiry. The upfront premium means the holder has already paid, so exposure grows with uncertainty. Note: exotic options may differ.',
+  optionExplains: [
+    'Wrong. Peaked/hump shape arises from PERIODIC cash flow settlement (IRS), not single-payment instruments.',
+    'CORRECT. Single payoff at expiry → √t profile, same as FX forward.',
+    'Wrong. Bonds have approximately deterministic exposure near notional.',
+    'Wrong. CDS have discrete credit-event jump profiles.'
+  ],
+  trap: 'Students confuse option moneyness effects (different concept) with the overall profile shape (√t for single-payment instruments).'
+},
+
+{
+  id:70, type:'mcq', difficulty:'hard',
+  topic:'Exercise Boundary Recursion', page:'p.285',
+  text: 'For a physically-settled swaption, the exercise decision creates a recursive problem for xVA because:',
+  options:[
+    'Physical settlement requires delivery of bonds which creates additional liquidity risk',
+    'The exercise decision should incorporate future xVA adjustments, but those xVA adjustments depend on whether exercise occurs',
+    'Physically-settled swaptions always have higher PFE than cash-settled ones regardless of xVA',
+    'The exercise boundary is fixed at the forward rate, making computation tractable'
+  ],
+  correct: 1,
+  hint: 'When deciding to exercise, you should consider the xVA of the resulting swap. But the xVA depends on whether you have the swap...',
+  explanation: 'To optimally exercise, you should incorporate future xVA adjustments (e.g., CVA) into the exercise decision. But those xVA adjustments depend on whether you end up holding the swap (i.e., whether you exercise). This creates a circular dependency: exercise decision → xVA → exercise decision. Similar to the close-out amount recursion.',
+  optionExplains: [
+    'Wrong. Physical delivery creates operational complexity but not the specific xVA recursion.',
+    'CORRECT. Exercise decision ↔ future xVA are mutually dependent → recursion.',
+    'Wrong. Cash-settled swaptions have identical exposure until exercise; physically-settled exceed cash-settled only POST-exercise.',
+    'Wrong. The exercise boundary depends on xVA (which is non-constant and uncertain).'
+  ],
+  trap: 'Students think the recursion problem is unique to close-out valuation. It also applies to exercise decisions with xVA-aware optimal stopping.'
+},
+
+{
+  id:71, type:'mcq', difficulty:'medium',
+  topic:'Variation Margin Funding', page:'p.293',
+  text: 'From Equation 19.11 (Funding = value – VM + IMP), if a bank has value = –$20M and has POSTED $15M of variation margin (VM posted, so negative in funding equation): what is the funding position?',
+  options:['+$5M (funding cost)','-$5M (funding benefit)','$0','-$35M'],
+  correct: 1,
+  hint: 'VM posted is outgoing (negative). Funding = value – (–15) + 0 = –20 + 15 = –5. Negative = benefit.',
+  explanation: 'When VM is POSTED (outgoing), it appears as a NEGATIVE in the Equation 19.7: funding = value – margin. Posted margin is negative margin (you\'ve paid it out). So: funding = –20 – (–15) = –20 + 15 = –5. Funding = –$5M = FUNDING BENEFIT (negative funding = benefit).',
+  optionExplains: [
+    'Wrong. +$5M would be a cost. Calculation gives –5, which is a benefit.',
+    'CORRECT. –$20 + $15 posted back = –$5 funding benefit.',
+    'Wrong. Zero would require value + posted VM = 0, i.e., –20 + 20 = 0 (only if VM = 20).',
+    'Wrong. –$35M = –20 – 15 (wrongly subtracting posted VM again).'
+  ],
+  trap: 'Sign conventions for posted vs received margin in the funding formula trip up most students. Posted margin = outflow = reduces funding need (benefit if total is negative).'
+},
+
+{
+  id:72, type:'mcq', difficulty:'hard',
+  topic:'Aggregation Funding vs CVA', page:'p.291',
+  text: 'Why does FUNDING exposure aggregate at the OVERALL PORTFOLIO level (not netting-set level)?',
+  options:[
+    'Regulators require overall-portfolio aggregation for FVA calculation',
+    'Close-out netting (netting set) only applies in default scenarios; in non-default scenarios, funding benefits can be realized across the full portfolio as margin is reusable',
+    'Funding costs only arise for transactions above a certain notional threshold',
+    'Overall portfolio aggregation provides regulatory capital relief for xVA desks'
+  ],
+  correct: 1,
+  hint: 'Netting sets matter for DEFAULT. For FUNDING (non-default scenarios), what changes?',
+  explanation: 'Close-out netting is a legal concept that applies ONLY at default — defining which transactions offset for credit exposure. For funding (non-default), there is no legal constraint to netting-set level. Cash/reusable margin from one counterparty can fund obligations to another. Hence, funding aggregates at the overall portfolio level.',
+  optionExplains: [
+    'Wrong. There is no specific regulatory rule mandating this aggregation for FVA.',
+    'CORRECT. Non-default scenario → no netting-set constraint → funding aggregates across full portfolio.',
+    'Wrong. No notional threshold exists for funding cost applicability.',
+    'Wrong. Capital relief is a separate consideration (KVA), not the reason for funding aggregation.'
+  ],
+  trap: 'Students apply the "netting set" framework to funding just as they do to CVA. The KEY: netting sets only bind in DEFAULT scenarios.'
+},
+
+{
+  id:73, type:'mcq', difficulty:'medium',
+  topic:'EFV = 0 at Par', page:'p.277',
+  text: 'At INCEPTION of a par interest rate swap (current value = 0), what is EPE and ENE, assuming the distribution of future values is symmetric around zero?',
+  options:[
+    'EPE = 0; ENE = 0',
+    'EPE > 0; ENE < 0 (both symmetric in absolute value)',
+    'EPE = ENE = current value = 0',
+    'EPE and ENE depend entirely on the yield curve shape at inception'
+  ],
+  correct: 1,
+  hint: 'Even if EFV = 0 (symmetric distribution centered at zero), EPE zero-floors negatives and ENE zero-floors positives. Do they cancel?',
+  explanation: 'Even with EFV = 0 (symmetric distribution), EPE > 0 and ENE < 0. EPE = average of max(value, 0) which takes the average of the positive half → positive number. ENE = average of min(value, 0) → negative number. They don\'t "cancel" — both are nonzero. By symmetry: EPE = –ENE for a zero-mean symmetric distribution.',
+  optionExplains: [
+    'Wrong. EPE and ENE are nonzero even with EFV = 0.',
+    'CORRECT. EFV = 0 → symmetric → EPE > 0 and ENE < 0, equal in absolute value.',
+    'Wrong. EPE is not equal to current value (0) — it\'s the average of POSITIVE future values.',
+    'Wrong. While yield curve shape affects EFV (drift), for a SYMMETRIC assumption EFV = 0 and EPE = –ENE regardless of rate level.'
+  ],
+  trap: 'Students confuse EFV = 0 with EPE = ENE = 0. EFV = 0 means they\'re symmetric, NOT that they\'re both zero.'
+},
+
+{
+  id:74, type:'mcq', difficulty:'hard',
+  topic:'Path Dependency Margin', page:'p.289',
+  text: 'The treatment of margin is described as PATH DEPENDENT. Which specific aspect creates this path dependency?',
+  options:[
+    'Margin value fluctuates with interest rates, creating a path-dependent cost',
+    'The amount of margin required at time t depends on margin called or posted in the PAST',
+    'Path dependency arises from exercise decisions on embedded options in the margin agreement',
+    'Margin path dependency is only relevant for unilateral margin agreements'
+  ],
+  correct: 1,
+  hint: 'If you over-margined last period, do you need as much margin this period?',
+  explanation: 'Margin is path-dependent because the margin REQUIRED at time t depends on the margin ALREADY posted or received. If significant margin was posted in the past, the net call may be reduced; if margin was previously called, next period\'s call may be smaller or in reverse. This is especially important for two-way margin agreements where direction of flow can reverse.',
+  optionExplains: [
+    'Wrong. While margin value can fluctuate (one of the three imperfections), that\'s not the path dependency described here.',
+    'CORRECT. Current margin requirement depends on historical margin flows → path dependent.',
+    'Wrong. Exercise boundaries relate to swaptions, not margin agreements.',
+    'Wrong. Path dependency applies to BOTH unilateral and bilateral (two-way) margin, especially bilateral.'
+  ],
+  trap: 'Students think path dependency = stochastic. Here it has a specific meaning: current state depends on history of previous margin transfers.'
+},
+
+{
+  id:75, type:'mcq', difficulty:'medium',
+  topic:'Effective EPE', page:'p.278',
+  text: 'Average EPE is the WEIGHTED AVERAGE of EPE across time horizons. If EPE points are equally spaced, the weights are:',
+  options:[
+    'Probability weights from the distribution of default times',
+    'Equal (simple average)',
+    'Proportional to PFE at each time point',
+    'Inversely proportional to time (near-term EPE counts more)'
+  ],
+  correct: 1,
+  hint: 'If points are equally spaced, equal time intervals → equal weights.',
+  explanation: 'When EPE is measured at equally spaced time points, the weighted average equals the simple average (all weights = 1/N). The weights represent time intervals between measurement points. Equal spacing → equal weights → simple average. This is explicitly stated in the text.',
+  optionExplains: [
+    'Wrong. Default probability weights are used in CVA calculation, not in average EPE directly.',
+    'CORRECT. Equal spacing → equal weights → simple average = average EPE.',
+    'Wrong. PFE is a different metric; it doesn\'t determine averaging weights for EPE.',
+    'Wrong. No inverse-time weighting scheme is described; equal spacing means equal weights.'
+  ],
+  trap: 'Students may apply survival probability weighting (from CVA) to EPE averaging. Average EPE is purely time-weighted, not probability-weighted at this stage.'
+},
+
+{
+  id:76, type:'mcq', difficulty:'hard',
+  topic:'OTM Portfolio Netting', page:'p.287',
+  text: 'An existing portfolio is deeply OTM (large negative current value). A new PROFITABLE transaction is added. The aggregated EPE is LOWER than the EPE of the new transaction alone. Why?',
+  options:[
+    'The OTM portfolio has such high exposure it overwhelms the new transaction\'s EPE',
+    'The existing OTM portfolio damps the new transaction\'s positive exposure contribution — it must overcome the existing negative value before creating net positive exposure',
+    'Netting sets cannot include both OTM and new transactions under ISDA',
+    'The new transaction\'s EPE is reduced by the OTM portfolio\'s initial margin'
+  ],
+  correct: 1,
+  hint: 'Think of the OTM portfolio as a "weight" pulling down the net portfolio value before it can go positive.',
+  explanation: 'The existing OTM portfolio has negative value. When aggregated with a new profitable transaction, the net portfolio value must FIRST overcome the negative value before turning positive. This reduces the frequency and magnitude of positive net exposures → lower aggregated EPE than the new transaction alone. Even directional (all-OTM) portfolios can produce netting benefits.',
+  optionExplains: [
+    'Wrong. An OTM portfolio has LOW positive exposure (not high); it doesn\'t overwhelm.',
+    'CORRECT. OTM portfolio drags down net value → fewer/smaller positive scenarios → lower EPE.',
+    'Wrong. ISDA netting sets can include transactions of any value.',
+    'Wrong. Initial margin of OTM portfolio doesn\'t directly affect EPE of new transaction.'
+  ],
+  trap: 'Students think OTM portfolio + new trade = additive EPE. In reality, the OTM drag creates netting even in "directional" portfolios.'
+},
+
+{
+  id:77, type:'truefalse', difficulty:'medium',
+  topic:'FVA of Collateralized Derivative', page:'p.290',
+  text: 'TRUE or FALSE: A fully collateralized derivative (two-way margin, zero threshold) has both CVA ≈ 0 AND FVA ≈ 0.',
+  correct: false,
+  hint: 'FVA uses normal margin posting frequency (shorter delay) → FVA ≈ 0. But CVA uses MPoR (longer). So are both approximately zero?',
+  explanation: 'FALSE. CVA ≠ 0 for a collateralized derivative because during MPoR (the default-triggered gap period), exposure exists. FVA ≈ 0 because for funding (non-default scenario), margin is posted/received on normal operational frequency (very short delay → near-zero funding exposure). CVA has residual from MPoR; FVA approaches zero.',
+  wrongPart: '"CVA ≈ 0" is wrong. CVA has a residual from the MPoR gap; FVA ≈ 0 is correct.',
+  trap: 'Students assume perfect collateralization kills both CVA and FVA. It kills FVA (via fast margin posting), but CVA survives through the MPoR gap.'
+},
+
+{
+  id:78, type:'mcq', difficulty:'hard',
+  topic:'Negative Exposure Formula with Margin', page:'p.292',
+  text: 'Using Eq 19.8 for NEGATIVE exposure in counterparty risk context: Negative exposure = min(value + margin_posted – margin_received_segregated, 0). Value = –30, margin posted = 15, segregated margin received (IMR_S) = 3. What is negative exposure?',
+  options:['min(–30 + 15 + 3, 0) = –12','min(–30 – 15 + 3, 0) = –42','min(–30 + 15 – 3, 0) = –18','min(–30 – 15 – 3, 0) = –48'],
+  correct: 2,
+  hint: 'Negative exposure for CR purposes = min(value + margin_posted – margin_received_segregated, 0). Posted margin is outgoing (+). Received segregated is incoming (–).',
+  explanation: 'Using the footnote formula for negative exposure in CR context: min(value + margin_P – margin_R_NS, 0). Here: value = –30, margin_P = 15 (posted), margin received = 3 (segregated, reduces our liability). Result: min(–30 + 15 – 3, 0) = min(–18, 0) = –18.',
+  optionExplains: [
+    'Wrong. –12 uses + for received margin, but it should reduce the negative exposure.',
+    'Wrong. –42 subtracts posted margin — wrong sign (posted margin reduces negative exposure).',
+    'CORRECT. min(–30 + 15 – 3, 0) = min(–18, 0) = –18.',
+    'Wrong. –48 subtracts both margins — both signs are wrong.'
+  ],
+  trap: 'The sign conventions in the negative exposure formula are the mirror image of positive exposure. Posted margin reduces negative exposure (you\'ve paid it), received reduces it further.'
+},
+
+{
+  id:79, type:'mcq', difficulty:'medium',
+  topic:'Lehman Bankruptcy Lesson', page:'p.275',
+  text: 'The Lehman Brothers bankruptcy illustrates which specific risk in counterparty exposure management?',
+  options:[
+    'Basis risk between CDS hedges and actual default losses',
+    'The time delay risk in agreeing on close-out amounts for hundreds of OTC derivatives contracts',
+    'The failure of netting agreements under US bankruptcy law',
+    'The underestimation of initial margin requirements'
+  ],
+  correct: 1,
+  hint: 'What specific problem does the text mention about the Lehman default?',
+  explanation: 'The text uses Lehman as an example of the TIME DELAY problem — "the sheer operational volumes can make the time taken to agree on such valuations considerable." With hundreds of OTC derivatives contracts, agreeing on close-out amounts took extremely long. Until agreement, institutions couldn\'t determine their claim as unsecured creditor.',
+  optionExplains: [
+    'Wrong. Basis risk of CDS hedges is a separate (and also real) Lehman lesson, but not what the text highlights here.',
+    'CORRECT. Lehman is used to illustrate the close-out valuation delay for large OTC portfolios.',
+    'Wrong. US netting enforceability (safe harbor) generally upheld netting in Lehman.',
+    'Wrong. IM requirements are a post-crisis reform, not the Lehman lesson cited here.'
+  ],
+  trap: 'Lehman has many lessons — basis risk, counterparty risk, liquidity. The SPECIFIC lesson in Ch19 is close-out time delay for large OTC portfolios.'
+},
+
+{
+  id:80, type:'mcq', difficulty:'hard',
+  topic:'IRS EPE Calculation Setup', page:'p.280',
+  text: 'For a 9-year interest rate swap, at what maturity does the exposure peak (using the (T–t)√t rule)?',
+  options:['3 years','4.5 years','6 years','1 year'],
+  correct: 0,
+  hint: 'Maximum of (T–t)√t occurs at t = T/3. What is T/3 for T = 9?',
+  explanation: 'Maximum occurs at t = T/3 = 9/3 = 3 years. The hump-shaped IRS exposure profile peaks at one-third of maturity. This is derived from setting the derivative of (T–t)√t to zero.',
+  optionExplains: [
+    'CORRECT. T/3 = 9/3 = 3 years.',
+    'Wrong. 4.5 = T/2 — this is intuitive but incorrect; √t weighting shifts peak to T/3.',
+    'Wrong. 6 = 2T/3 — this would be past the peak, on the declining side.',
+    'Wrong. 1 = T/9 — too early; uncertainty hasn\'t built sufficiently.'
+  ],
+  trap: 'T/2 is always tempting. Remember the formula: T/3 for IRS, T for FX forward.'
+},
+
+{
+  id:81, type:'mcq', difficulty:'medium',
+  topic:'Counterparty Risk Bilaterality', page:'p.274',
+  text: 'Counterparty risk is BILATERAL. This means:',
+  options:[
+    'Both CVA and DVA are relevant — both parties can default and create losses to the other',
+    'Both parties must post identical amounts of margin under any netting agreement',
+    'ISDA requires both parties to provide credit ratings before executing any derivative',
+    'Bilateral risk means counterparty risk is always zero-sum across the two parties'
+  ],
+  correct: 0,
+  hint: 'If BOTH parties can default, what risk does EACH party face?',
+  explanation: 'Counterparty risk is bilateral because BOTH parties can default. From Party A\'s view: if counterparty B defaults and value is positive → loss (CVA). From Party A\'s view: if A itself defaults and value is negative to B → A\'s own default causes B a loss → DVA for A. Both CVA and DVA arise from this bilateral nature.',
+  optionExplains: [
+    'CORRECT. Bilateral = both can default = CVA (theirs) + DVA (yours) both relevant.',
+    'Wrong. Bilateral risk doesn\'t mean identical margin posting.',
+    'Wrong. Credit ratings are not mentioned as ISDA requirements here.',
+    'Wrong. Counterparty risk is not zero-sum — both parties can face losses simultaneously.'
+  ],
+  trap: 'Students confuse "bilateral" with "symmetric" or "zero-sum." Bilateral = both parties face risk; not equal amounts, and not zero-sum.'
+},
+
+{
+  id:82, type:'mcq', difficulty:'hard',
+  topic:'Two-Part Analysis: Segregation', page:'p.292',
+  text: 'PART A: Initial margin (IM) RECEIVED must be segregated to minimize counterparty risk. PART B: Initial margin POSTED must also be segregated to minimize counterparty risk. Which combination is correct?',
+  options:[
+    'Both Part A and Part B are correct',
+    'Part A is correct; Part B is ALSO correct (unsegregated posted IM increases positive exposure)',
+    'Part A is correct; Part B is wrong (posted IM must be segregated to protect the poster)',
+    'Part B only is correct'
+  ],
+  correct: 1,
+  hint: 'For IM RECEIVED: segregation ensures it\'s ring-fenced and protects you. For IM POSTED: if it\'s NOT segregated at the counterparty, you can\'t get it back if THEY default.',
+  explanation: 'Both are correct. IM RECEIVED: must be segregated (ring-fenced) so it\'s protected and used only for the purpose it\'s posted. IM POSTED (unsegregated): if counterparty defaults, you CANNOT retrieve it → it creates additional POSITIVE EXPOSURE. Therefore, posted IM should also be segregated (at a third-party custodian) to prevent it from being lost to counterparty default.',
+  optionExplains: [
+    'Wrong. This phrasing is ambiguous — both A and B are indeed correct, but the explanation matters.',
+    'CORRECT. Both are correct. Unsegregated posted IM INCREASES positive exposure (Eq 19.8).',
+    'Wrong. You\'ve correctly identified Part A but the reasoning for Part B is wrong — posted IM should be segregated to protect the POSTER from counterparty default.',
+    'Wrong. Part A is also correct.'
+  ],
+  trap: 'Students know IM should be segregated but often think it applies only to received IM. POSTED IM must also be segregated — otherwise YOU lose it if the counterparty defaults.'
+},
+
+{
+  id:83, type:'truefalse', difficulty:'medium',
+  topic:'Variation Margin Never Segregated', page:'p.293',
+  text: 'TRUE or FALSE: Variation margin is ALWAYS segregated to protect against counterparty default.',
+  correct: false,
+  hint: 'What does the text say about segregation of variation margin?',
+  explanation: 'FALSE. Variation margin is NEVER segregated (it can typically be rehypothecated). This is because VM is posted against a negative valuation — it\'s covering what is owed. Segregating VM would be inappropriate overcollateralization. Initial margin is segregated; variation margin is not.',
+  wrongPart: '"always segregated" — the opposite is true. VM is never segregated.',
+  trap: 'Students confuse IM (segregated) with VM (not segregated). The distinction is fundamental: IM = overcollateral = needs protection; VM = exact offset = no segregation.'
+},
+
+{
+  id:84, type:'mcq', difficulty:'medium',
+  topic:'Expected Shortfall vs EPE', page:'p.285',
+  text: 'For CDS exposure, PFE can be misleading as a risk measure because it\'s a quantile measure. Which measure is mentioned as being ANALOGOUS to Expected Shortfall and avoids this problem?',
+  options:['EFV','PFE at higher confidence level','EPE','ENE'],
+  correct: 2,
+  hint: 'The text says "EPE is similar to expected shortfall and therefore does not suffer from the same problem as the PFE shown."',
+  explanation: 'EPE is noted as analogous to Expected Shortfall — both are averaging measures (not quantile measures like VaR/PFE). PFE, as a quantile measure, can create problems (the CDS jump example shows it may or may not capture the actual credit event). EPE averages the distribution and avoids this quantile-sensitivity issue.',
+  optionExplains: [
+    'Wrong. EFV is the mean of all values (positive and negative) — not analogous to ES.',
+    'Wrong. Higher confidence PFE is still a quantile measure — still has the same problem.',
+    'CORRECT. EPE ≈ Expected Shortfall: both are averaging measures, avoiding quantile issues.',
+    'Wrong. ENE captures negative exposures — not analogous to ES.'
+  ],
+  trap: 'Students who know PFE ≈ VaR may not know the EPE ≈ Expected Shortfall parallel. Both pairs share the same quantile vs. averaging distinction.'
+},
+
+{
+  id:85, type:'mcq', difficulty:'hard',
+  topic:'MVA vs FVA', page:'p.293',
+  text: 'The text suggests separating the funding effects of variation margin and initial margin into two distinct xVA terms. What are they?',
+  options:[
+    'CVA and DVA',
+    'FVA (for variation margin funding) and MVA (for initial margin funding)',
+    'KVA (for capital from variation margin) and FVA (for initial margin)',
+    'ColVA (for collateral) and FVA (for funding)'
+  ],
+  correct: 1,
+  hint: 'MVA = Margin Value Adjustment. What margin does it specifically relate to?',
+  explanation: 'FVA captures the funding impact of variation margin (difference between portfolio value and VM). MVA (Margin Value Adjustment) specifically captures the funding cost of posting initial margin. Separating them is "convenient" because IM has different characteristics — it\'s segregated, bilateral, and has a specific capital/funding cost structure.',
+  optionExplains: [
+    'Wrong. CVA/DVA are credit adjustments, not funding adjustments.',
+    'CORRECT. FVA for VM funding; MVA for IM funding. This decomposition is mentioned in the text.',
+    'Wrong. KVA is for capital costs, not VM funding.',
+    'Wrong. ColVA is a different adjustment not directly described in these specific terms here.'
+  ],
+  trap: 'Students who know FVA often don\'t know MVA. The key: MVA was created specifically because the funding cost of INITIAL margin (bilateral under regulations) needed its own term.'
+},
+
+{
+  id:86, type:'mcq', difficulty:'medium',
+  topic:'Bond Exposure Characteristic', page:'p.279',
+  text: 'Why is the exposure of a FLOATING-RATE LOAN considered potentially DECREASING over time?',
+  options:[
+    'Floating rates decline with the yield curve over time',
+    'Pre-payments by the borrower can reduce the outstanding principal over time',
+    'Floating rate instruments are marked to market at par always',
+    'Floating loans have negative duration, reducing exposure as rates rise'
+  ],
+  correct: 1,
+  hint: 'The text mentions "pre-payments" as why floating loans can have declining exposure.',
+  explanation: 'Floating-rate loans have exposure approximately equal to outstanding principal. Pre-payments reduce outstanding principal → exposure declines. This is in contrast to bonds (fixed rate, no principal amortization option) where exposure is approximately constant at notional.',
+  optionExplains: [
+    'Wrong. Rate movements affect floating coupon but not the principal exposure.',
+    'CORRECT. Pre-payments reduce principal → declining exposure profile.',
+    'Wrong. Floating loans aren\'t marked to par in terms of credit exposure calculation.',
+    'Wrong. Duration concept applies to market value sensitivity, not credit exposure amortization.'
+  ],
+  trap: 'Students focus on rate movements (floating = uncertain coupons) and miss the prepayment angle which is explicitly mentioned in the text.'
+},
+
+{
+  id:87, type:'mcq', difficulty:'hard',
+  topic:'Positive Exposure With Margin Asymmetry', page:'p.292',
+  text: 'Using Eq 19.8: Positive exposure = max(value – margin_R + margin_P_NS, 0). Here, margin_P_NS is non-segregated posted margin. Why does it INCREASE positive exposure?',
+  options:[
+    'Posted margin creates a receivable that offsets negative values',
+    'If posted margin is not segregated, you cannot retrieve it upon counterparty default — it is effectively lost, creating additional loss',
+    'Non-segregated posted margin earns a positive return that increases portfolio value',
+    'Regulatory rules add non-segregated posted margin to positive exposure as a penalty'
+  ],
+  correct: 1,
+  hint: 'If you posted margin and the counterparty defaults — AND the margin is not segregated — what happens to it?',
+  explanation: 'Non-segregated posted margin = margin you sent to the counterparty without ring-fencing. If the counterparty defaults, you CANNOT retrieve it (it\'s part of their general estate). This creates additional LOSS on top of the portfolio value loss. Hence it adds to positive exposure in Eq 19.8: you can lose both the positive portfolio value AND the unretrievable posted margin.',
+  optionExplains: [
+    'Wrong. Posted margin is outgoing — it doesn\'t create a receivable in the standard sense.',
+    'CORRECT. Unretrievable → additional loss at default → adds to positive exposure.',
+    'Wrong. Non-segregated margin does not earn a return that helps you.',
+    'Wrong. No such regulatory penalty rule exists for this calculation.'
+  ],
+  trap: 'Students assume posted margin always reduces risk. Non-segregated posted margin creates ADDITIONAL exposure because you can\'t get it back from a defaulted counterparty.'
+},
+
+{
+  id:88, type:'mcq', difficulty:'medium',
+  topic:'Netting Set Importance for CVA', page:'p.286',
+  text: 'Why is netting set aggregation specifically important for CVA (vs. other metrics like FVA)?',
+  options:[
+    'CVA is computed under risk-neutral measure; FVA uses real-world — they apply to different aggregation levels by convention',
+    'Close-out netting determines which transactions can offset at default — only netting set transactions offset, which directly defines the credit exposure CVA is built on',
+    'Netting sets have tax implications that affect CVA but not FVA',
+    'CVA requires netting set aggregation because CVA is always zero for transactions outside a netting set'
+  ],
+  correct: 1,
+  hint: 'What does netting do at DEFAULT? And CVA is all about...',
+  explanation: 'CVA is the expected loss when the COUNTERPARTY DEFAULTS. At default, close-out netting applies — ONLY transactions in the same netting set can offset each other. This determines the actual exposure at default, which is the foundation of CVA. FVA, operating in non-default scenarios, doesn\'t depend on the same close-out netting constraint.',
+  optionExplains: [
+    'Wrong. Measure choice (risk-neutral vs real-world) is a different issue from aggregation level.',
+    'CORRECT. Default triggers netting set close-out → defines credit exposure → defines CVA.',
+    'Wrong. Tax implications are irrelevant to this aggregation logic.',
+    'Wrong. CVA is not zero outside netting sets — it\'s that netting benefits don\'t apply across sets.'
+  ],
+  trap: 'Students may confuse "netting set = all transactions with a counterparty." One counterparty can have multiple netting sets, and netting only works WITHIN each set.'
+},
+
+{
+  id:89, type:'truefalse', difficulty:'hard',
+  topic:'EPE Formula Insight', page:'p.278',
+  text: 'TRUE or FALSE: EPE will equal EFV exactly when all future scenarios have positive values (i.e., the portfolio is deeply ITM with no negative scenarios).',
+  correct: true,
+  hint: 'If all values are positive, what does max(value, 0) equal?',
+  explanation: 'TRUE. When ALL scenarios are positive, max(value, 0) = value for every scenario. Therefore EPE = average of max(value, 0) = average of value = EFV. Zero-flooring has no effect when all values are already positive.',
+  wrongPart: 'N/A — the statement is true.',
+  trap: 'Students think EPE always exceeds EFV (it does in general, but equals EFV when all scenarios are positive — in that extreme case, the zero-floor is never binding).'
+},
+
+{
+  id:90, type:'mcq', difficulty:'hard',
+  topic:'CCS High Rate Payer ENE', page:'p.281–282',
+  text: 'For the REVERSE CCS (paying LOW interest rate, receiving HIGH interest rate currency), the exposure profile is characterized by:',
+  options:[
+    'High EPE, since the party receives a high-rate currency (appreciating)',
+    'Low EPE and high ENE — the party is expected to pay on the final notional exchange, creating negative drift',
+    'Zero exposure — the low rate payments mean small cash flows',
+    'High EPE but zero ENE — symmetric swap design'
+  ],
+  correct: 1,
+  hint: 'The REVERSE of the high-rate payer = low-rate payer. If the high-rate payer has LARGE EPE, what does the low-rate payer have?',
+  explanation: 'The low-rate payer (receiving high-rate currency) faces a NEGATIVE drift — the high-rate currency is expected to appreciate against theirs, meaning at maturity they\'ll receive less in their currency than expected. The text explicitly states: "when paying the currency with the lower interest rates, it is increasingly likely that the future value of the swap will be negative. This creates a negative drift, making the exposure much lower [EPE lower] and ENE large."',
+  optionExplains: [
+    'Wrong. Receiving high-rate currency means PAYING it — you lose if it appreciates.',
+    'CORRECT. Negative drift → low EPE, high (negative) ENE for the low-rate payer.',
+    'Wrong. The notional exchange is the dominant risk — not negligible.',
+    'Wrong. The CCS is decidedly asymmetric; ENE is NOT zero for the low-rate payer.'
+  ],
+  trap: 'Students mix up which party benefits from the rate differential. The HIGH-rate payer has high EPE (expects notional gain). LOW-rate payer has high ENE (expects notional loss).'
+},
+
+{
+  id:91, type:'mcq', difficulty:'medium',
+  topic:'Market Risk Horizon vs Exposure Horizon', page:'p.276',
+  text: 'CCP initial margin for OTC derivatives uses a margin horizon of approximately:',
+  options:['1 day','5 days','10 days','30 days'],
+  correct: 1,
+  hint: 'The text footnote distinguishes bilateral margin (10 days) from CCP margin.',
+  explanation: 'CCPs for OTC derivatives typically use a 5-day margin horizon (vs. 10 days for bilateral margin requirements). This is mentioned in the footnote about margin horizons. Traditional VaR uses 10 days; bilateral IM uses 10 days; CCP IM uses 5 days (shorter due to more controlled default management).',
+  optionExplains: [
+    'Wrong. 1 day is too short — even repo markets use longer horizons.',
+    'CORRECT. CCP OTC derivatives margin = 5-day horizon.',
+    'Wrong. 10 days = bilateral margin requirements and traditional VaR. CCPs use shorter horizon.',
+    'Wrong. 30 days is too long for standard CCP margin.'
+  ],
+  trap: 'Students default to "10 days = all margin requirements." The CCP/bilateral distinction (5 vs 10 days) is a specific testable fact.'
+},
+
+{
+  id:92, type:'mcq', difficulty:'hard',
+  topic:'Strongly vs Overcollateralized', page:'p.289–290',
+  text: 'What is the ONLY material difference between "strongly collateralized" and "overcollateralized" exposure cases?',
+  options:[
+    'Strongly collateralized has a positive threshold; overcollateralized has zero threshold',
+    'Overcollateralized includes INITIAL MARGIN in addition to variation margin; strongly collateralized has no initial margin',
+    'Strongly collateralized applies to bilateral trades; overcollateralized applies to CCP trades only',
+    'Overcollateralized means MPoR = 0; strongly collateralized has nonzero MPoR'
+  ],
+  correct: 1,
+  hint: 'What additional margin component is present in the overcollateralized case?',
+  explanation: 'Strongly collateralized: thresholds = 0, no initial margin, MPoR residual remains. Overcollateralized: ADDS initial margin → exposure further reduced (potentially to zero if IM is sufficient). The IM is the ONLY difference — overcollateralized = strongly collateralized + IM.',
+  optionExplains: [
+    'Wrong. Strongly collateralized already assumes threshold = 0 (per text). That\'s not the difference.',
+    'CORRECT. Overcollateralized = strongly collateralized + initial margin provision.',
+    'Wrong. Both cases can apply to bilateral or CCP trades.',
+    'Wrong. MPoR is relevant for both; its treatment doesn\'t define the distinction.'
+  ],
+  trap: 'Students who haven\'t read carefully may confuse "threshold = 0" (defining strongly collateralized) with "overcollateralized" (which adds IM on top).'
+},
+
+{
+  id:93, type:'mcq', difficulty:'medium',
+  topic:'Netting Additive Results', page:'p.286',
+  text: 'In the positive-correlation netting example, EPE of T1 = 18, EPE of T2 = 4, aggregated EPE = 21. The aggregated is LESS than sum (22) by exactly 1. What must be TRUE about the diversification benefit?',
+  options:[
+    'The diversification benefit is large — netting reduces EPE by more than 50%',
+    'The diversification benefit is small — only ONE scenario (out of 5) has opposite-sign values',
+    'The diversification benefit is zero — positive correlation destroys all netting benefit',
+    'The result (21 < 22) is a calculation error; aggregated EPE should equal the sum'
+  ],
+  correct: 1,
+  hint: 'Look at the example data: how many scenarios have T1 and T2 with opposite signs?',
+  explanation: 'In the positive-correlation example, Scenarios 1-2 have both positive (small diversification). Scenario 3 has T1=+10, T2=–5 (only one where values diverge). Scenarios 4-5 have both negative. Only scenario 3 generates netting benefit → very small reduction (22→21). Diversification benefit = 1 unit, driven by ONE cross-over scenario.',
+  optionExplains: [
+    'Wrong. The benefit is only 1 unit (22→21), not more than 50%.',
+    'CORRECT. High positive correlation → only 1 opposite-sign scenario → tiny benefit.',
+    'Wrong. Benefit is NOT zero (22≠21), just very small. Perfect correlation would give zero benefit.',
+    'Wrong. The result is correct; aggregated EPE ≤ sum of EPEs always (never greater).'
+  ],
+  trap: 'Students may think "positive correlation = zero netting benefit." Even with perfect VALUE correlation, exposure correlation is slightly less than 1 (because the max/min operators reduce correlation).'
+},
+
+{
+  id:94, type:'truefalse', difficulty:'hard',
+  topic:'EFV Additivity Proof', page:'p.286',
+  text: 'TRUE or FALSE: EFV is additive across transactions (EFV_aggregate = EFV_1 + EFV_2) because EFV uses the max() function which is linear.',
+  correct: false,
+  hint: 'EFV is additive — TRUE. But the reason is NOT because of max(). EFV doesn\'t use max().',
+  explanation: 'FALSE (partially). EFV IS additive, but NOT because of the max() function. EFV uses NO max() function — it\'s simply the arithmetic average of all future values: EFV = E[value]. By linearity of expectation: E[V1 + V2] = E[V1] + E[V2]. The max() function (used in EPE) is NOT linear, which is why EPE is NOT additive.',
+  wrongPart: '"because EFV uses the max() function" is the error — EFV does not use max(). max() is used for EPE.',
+  trap: 'Students who know EPE uses max() sometimes incorrectly attribute the same to EFV. EFV = simple average = no max() = additive by linearity of expectation.'
+},
+
+{
+  id:95, type:'mcq', difficulty:'hard',
+  topic:'INtegrated Exposure Metrics Ordering', page:'p.278',
+  text: 'For a SKEWED-RIGHT distribution of future values (positive mean, right tail), which ordering of metrics is CORRECT?',
+  options:[
+    'ENE < 0 < EFV < EPE < PFE(99%)',
+    '0 < ENE < EFV < EPE < PFE(99%)',
+    'ENE < EFV < 0 < EPE < PFE(99%)',
+    'ENE < 0 < EPE < EFV < PFE(99%)'
+  ],
+  correct: 0,
+  hint: 'ENE is negative. EFV > 0 (positive mean). EPE > EFV (zero-flooring boosts it). PFE(99%) is the far right tail.',
+  explanation: 'For a positively-skewed right distribution with positive mean: ENE < 0 (captures the left tail) < EFV > 0 (positive mean) < EPE > EFV (zero-flooring boosts the average above the mean) < PFE(99%) (far right tail quantile). The ordering is: ENE < 0 < EFV < EPE < PFE.',
+  optionExplains: [
+    'CORRECT. ENE negative, then 0, then positive EFV, then EPE > EFV, then PFE is the highest.',
+    'Wrong. ENE is negative, so it cannot be between 0 and EFV.',
+    'Wrong. EFV should be positive (positive mean), so EFV > 0.',
+    'Wrong. EPE > EFV always (zero-flooring effect), so EFV < EPE, not EPE < EFV.'
+  ],
+  trap: 'The EPE > EFV relationship (zero-flooring boosts EPE above the mean) is the key subtlety here.'
+},
+
+{
+  id:96, type:'mcq', difficulty:'hard',
+  topic:'Cash-Settled vs Physically-Settled Swaption', page:'p.284',
+  text: 'A CASH-SETTLED swaption has what exposure profile AFTER the exercise date?',
+  options:[
+    'Identical to the physical swaption — both continue as swaps',
+    'The same peaked swap profile since cash settlement equals physical settlement in value',
+    'Zero exposure after exercise date — cash settlement terminates the contract at exercise',
+    'Exposure equal to the physical swaption minus the exercise premium'
+  ],
+  correct: 2,
+  hint: 'Cash settlement = receive/pay cash equal to swaption value at exercise. After that payment, what\'s left?',
+  explanation: 'A cash-settled swaption: at exercise, the holder receives a cash payment equal to the swaption\'s value, and the contract terminates. There is NO ongoing swap relationship. Therefore, exposure goes to ZERO after the exercise date. In contrast, a physically-settled swaption continues as a live swap.',
+  optionExplains: [
+    'Wrong. Cash-settled terminates at exercise; physical continues as a swap.',
+    'Wrong. While VALUES may be equal at exercise, the EXPOSURE profiles differ dramatically afterward.',
+    'CORRECT. Cash settlement = lump sum → zero exposure afterward.',
+    'Wrong. No "exercise premium" concept applies here in this way.'
+  ],
+  trap: 'Students confuse "same VALUE at exercise" (true) with "same exposure profile" (false post-exercise). Cash = terminates; Physical = continues.'
+},
+
+{
+  id:97, type:'mcq', difficulty:'medium',
+  topic:'Funding: Positive vs Negative Value', page:'p.290',
+  text: 'Under the funding framework, a NEGATIVE portfolio value (bank owes the counterparty) represents:',
+  options:[
+    'A funding COST — the bank must pay out cash',
+    'A funding BENEFIT — the bank has effectively borrowed from the counterparty',
+    'Zero funding impact — liabilities don\'t affect funding',
+    'A funding cost proportional to the counterparty\'s credit spread'
+  ],
+  correct: 1,
+  hint: 'If you OWE money (negative value), you\'ve effectively received cash (a liability = you\'ve borrowed). What does borrowing give you?',
+  explanation: 'A negative portfolio value means the bank OWES the counterparty — effectively, the bank has "borrowed" this amount. From a funding perspective, this is a FUNDING BENEFIT (negative funding in Eq 19.7). The bank doesn\'t need to find external funding for this amount since it\'s already implicitly funded by the counterparty\'s claim.',
+  optionExplains: [
+    'Wrong. Negative value = you\'ve effectively received funds (liability) = funding BENEFIT.',
+    'CORRECT. Negative value = owe counterparty = implicit borrowing = funding benefit.',
+    'Wrong. Liabilities absolutely affect funding — they reduce the funding need.',
+    'Wrong. Counterparty\'s credit spread is relevant for DVA pricing, not the sign of the funding benefit.'
+  ],
+  trap: 'Students think "negative value = negative outcome = funding cost." Economically, negative value = you\'ve received the value and owe it back = funding BENEFIT.'
+},
+
+{
+  id:98, type:'mcq', difficulty:'hard',
+  topic:'Correlation Impact on Aggregation', page:'p.287',
+  text: 'As the number of transactions in a portfolio INCREASES and the CORRELATION between transactions DECREASES, what happens to aggregated EPE relative to the sum of individual EPEs?',
+  options:[
+    'The ratio of aggregated EPE to sum of individual EPEs approaches 1 (no diversification)',
+    'The ratio of aggregated EPE to sum of individual EPEs decreases toward 0 (full diversification)',
+    'The aggregated EPE stays constant regardless of portfolio size',
+    'Aggregated EPE can exceed the sum as transactions add positive dependency'
+  ],
+  correct: 1,
+  hint: 'More transactions + lower correlation = more diversification. What happens to EPE as a fraction of the sum of individual EPEs?',
+  explanation: 'Appendix 12D formula shows exposure reduction increases with: (1) portfolio size (more transactions) and (2) lower correlation between transactions. As the portfolio grows with low/zero correlation, diversification is maximal — aggregated EPE → 0 relative to sum of individual EPEs (or more precisely, the ratio approaches some lower bound driven by systematic risk).',
+  optionExplains: [
+    'Wrong. Ratio approaches 1 only with PERFECT positive correlation (no diversification).',
+    'CORRECT. More transactions + lower correlation → more diversification → ratio decreases toward minimum.',
+    'Wrong. Portfolio size and correlation both affect aggregated EPE.',
+    'Wrong. Aggregated EPE can NEVER exceed the sum (mathematical inequality).'
+  ],
+  trap: 'Students confuse "ratio → 0" (with infinite zero-correlation transactions) with "EPE → 0." A large zero-correlation portfolio still has a residual systematic component.'
+},
+
+{
+  id:99, type:'mcq', difficulty:'hard',
+  topic:'MVA Initial Margin Funding', page:'p.293',
+  text: 'A bank has a portfolio with value = $50M, variation margin received = $45M, initial margin received (segregated) = $8M, and initial margin POSTED (bilaterally segregated) = $8M. Using Eq 19.11 (Funding = value – VM + IMP): what is the funding amount?',
+  options:['$5M','$13M','$21M','-$3M'],
+  correct: 1,
+  hint: 'Eq 19.11: Funding = value – VM + IMP. IMP = initial margin posted. VM = variation margin received.',
+  explanation: 'Funding = value – VM + IMP = 50 – 45 + 8 = 13. The IMP (posted IM) adds to funding cost because you\'ve sent it out and must fund it. The IMR (received IM, segregated) does NOT appear in Eq 19.11 as a funding benefit (it\'s segregated and can\'t be reused). Result: $13M funding cost.',
+  optionExplains: [
+    'Wrong. $5M = 50 – 45 + 0 (forgetting IMP contribution).',
+    'CORRECT. 50 – 45 + 8 = 13. IMP adds to funding cost.',
+    'Wrong. $21M = 50 – 45 + 8 + 8 (double-counting IM).',
+    'Wrong. –$3M would imply a funding benefit, but the net of value – VM + IMP is positive.'
+  ],
+  trap: 'Key distinction: IMR received (segregated) = no funding benefit (can\'t be rehypothecated). IMP posted = ADDS to funding cost. Don\'t subtract received IM in the Eq 19.11 calculation when it\'s segregated.'
+},
+
+{
+  id:100, type:'mcq', difficulty:'hard',
+  topic:'Full Integration: xVA and Exposure', page:'p.274–293',
+  text: 'A risk manager states: "For a collateralized trade, the only remaining exposure after margin is the Margin Period of Risk (MPoR) gap. This drives the CVA. But for FVA, the relevant margin gap is the OPERATIONAL margin posting frequency (much shorter). Therefore, for a well-collateralized trade, we get CVA ≠ 0, FVA ≈ 0, but MVA > 0 if initial margin is required to be posted." Is this statement correct?',
+  options:[
+    'Fully correct — all three conclusions are accurate',
+    'CVA ≠ 0 is correct; FVA ≈ 0 is correct; MVA > 0 is WRONG (MVA is only relevant for CCP trades)',
+    'CVA ≠ 0 is correct; FVA ≈ 0 is correct; MVA > 0 is correct — but MVA is captured within FVA, not separately',
+    'CVA ≠ 0 is wrong — full collateralization drives CVA to exactly zero'
+  ],
+  correct: 0,
+  hint: 'Review all three xVA components: CVA (MPoR gap), FVA (short non-default margin delay), MVA (cost of posting IM).',
+  explanation: 'All three statements are correct per the text: (1) CVA ≠ 0: MPoR gap leaves residual credit exposure. (2) FVA ≈ 0: operational margin frequency is very short → near-zero funding exposure. (3) MVA > 0: if bilateral IM must be posted (regulatory requirement), the COST of funding that IM is captured by MVA. The text explicitly mentions separating IM funding effects into FVA and MVA.',
+  optionExplains: [
+    'CORRECT. All three conclusions are accurate and consistent with the text.',
+    'Wrong. MVA is relevant for bilateral trades (not just CCPs) wherever IM is required.',
+    'Wrong. The text specifically says it\'s "convenient to SEPARATE" them into FVA and MVA — they\'re distinct.',
+    'Wrong. CVA ≠ 0 for collateralized trades because MPoR creates a residual gap.'
+  ],
+  trap: 'The hardest students get wrong: thinking full collateralization → CVA = 0. The MPoR gap is the specific reason CVA persists even with tight collateral. And MVA is bilateral, not just CCP.'
+}
+
+]; // END OF QUESTIONS ARRAY
+
+// ── STATE ──
+const state = {}; // keyed by question id: {answered, correct}
+let score = {correct:0, wrong:0};
+
+// ── INIT TOPIC DROPDOWN ──
+function initTopics(){
+  const topics = [...new Set(QUESTIONS.map(q=>q.topic))].sort();
+  const sel = document.getElementById('topic-select');
+  topics.forEach(t=>{
+    const o = document.createElement('option');
+    o.value = t; o.textContent = t;
+    sel.appendChild(o);
+  });
+}
+
+// ── RENDER ALL ──
+function renderAll(){
+  const list = document.getElementById('q-list');
+  list.innerHTML = '';
+  QUESTIONS.forEach((q,idx)=>{
+    const card = buildCard(q, idx+1);
+    list.appendChild(card);
+  });
+  applyFilters();
+}
+
+function buildCard(q, displayNum){
+  const div = document.createElement('div');
+  div.className = 'q-card';
+  div.id = 'card-'+q.id;
+  div.setAttribute('data-topic', q.topic);
+  div.setAttribute('data-diff', q.difficulty);
+  div.setAttribute('data-text', (q.text + ' ' + q.topic + ' ' + (q.options||[]).join(' ')).toLowerCase());
+
+  const diffClass = q.difficulty==='hard'?'badge-diff-hard':'badge-diff-medium';
+  const typeLbl = {mcq:'Multiple Choice',truefalse:'True / False'}[q.type]||q.type;
+
+  let html = `
+    <div class="q-meta">
+      <span class="badge badge-num">Q${displayNum}</span>
+      <span class="badge badge-type">${typeLbl}</span>
+      <span class="badge badge-topic">${q.topic}</span>
+      <span class="badge ${diffClass}">${q.difficulty.toUpperCase()}</span>
+      <span class="badge badge-page">${q.page}</span>
+    </div>
+    <div class="q-text">${q.text}</div>`;
+
+  if(q.type==='mcq'){
+    html += `<div class="options" id="opts-${q.id}">`;
+    q.options.forEach((opt,i)=>{
+      html += `<button class="opt-btn" onclick="answerMCQ(${q.id},${i})" id="opt-${q.id}-${i}">
+        <span class="opt-letter">${['A','B','C','D'][i]}</span>
+        <span class="opt-label">${opt}</span>
+      </button>`;
+    });
+    html += `</div>`;
+  } else if(q.type==='truefalse'){
+    html += `<div class="tf-row">
+      <button class="tf-btn true-btn" onclick="answerTF(${q.id},true)" id="tf-${q.id}-true">✅ TRUE</button>
+      <button class="tf-btn false-btn" onclick="answerTF(${q.id},false)" id="tf-${q.id}-false">❌ FALSE</button>
+    </div>`;
+  }
+
+  html += `
+    <div class="hint-box" id="hint-${q.id}">💡 ${q.hint}</div>
+    <div class="explain-box" id="exp-${q.id}"></div>
+    <div class="card-bottom">
+      <button class="hint-btn" id="hbtn-${q.id}" onclick="showHint(${q.id})">💡 Hint</button>
+      <span id="abadge-${q.id}"></span>
+    </div>`;
+
+  div.innerHTML = html;
+  return div;
+}
+
+// ── HINT ──
+function showHint(id){
+  if(state[id]) return;
+  document.getElementById('hint-'+id).classList.add('show');
+}
+
+// ── ANSWER MCQ ──
+function answerMCQ(id, chosen){
+  if(state[id]) return;
+  const q = QUESTIONS.find(x=>x.id===id);
+  const isCorrect = chosen === q.correct;
+  recordAnswer(id, isCorrect);
+
+  for(let i=0;i<q.options.length;i++){
+    const btn = document.getElementById(`opt-${id}-${i}`);
+    if(!btn) continue;
+    btn.disabled = true;
+    if(i===q.correct) btn.classList.add('correct-ans');
+    else if(i===chosen && !isCorrect) btn.classList.add('wrong-ans');
+    else btn.classList.add('dimmed');
+  }
+  showExplanation(id, q, isCorrect);
+  document.getElementById('hbtn-'+id).style.display='none';
+}
+
+// ── ANSWER TF ──
+function answerTF(id, userAnswer){
+  if(state[id]) return;
+  const q = QUESTIONS.find(x=>x.id===id);
+  const isCorrect = userAnswer === q.correct;
+  recordAnswer(id, isCorrect);
+
+  const tBtn = document.getElementById(`tf-${id}-true`);
+  const fBtn = document.getElementById(`tf-${id}-false`);
+  tBtn.disabled = true; fBtn.disabled = true;
+  if(q.correct===true) tBtn.classList.add('correct-ans'); else tBtn.classList.add(userAnswer===true?'wrong-ans':'dimmed');
+  if(q.correct===false) fBtn.classList.add('correct-ans'); else fBtn.classList.add(userAnswer===false?'wrong-ans':'dimmed');
+  showExplanation(id, q, isCorrect);
+  document.getElementById('hbtn-'+id).style.display='none';
+}
+
+// ── RECORD ──
+function recordAnswer(id, isCorrect){
+  state[id] = {answered:true, correct:isCorrect};
+  if(isCorrect) score.correct++; else score.wrong++;
+  updateScore();
+
+  const badge = document.getElementById('abadge-'+id);
+  if(badge){
+    badge.className = `answered-badge ${isCorrect?'ab-correct':'ab-wrong'}`;
+    badge.textContent = isCorrect ? '✅ Correct' : '❌ Wrong';
+  }
+}
+
+// ── EXPLANATION ──
+function showExplanation(id, q, isCorrect){
+  const box = document.getElementById('exp-'+id);
+  const hc = isCorrect?'correct-h':'wrong-h';
+  const ht = isCorrect?'✅ Correct!':'❌ Not quite';
+  let html = `<div class="explain-header ${hc}">${ht}</div><div class="explain-body">`;
+  html += `<div class="explain-section"><div class="explain-label why">📖 Why This Is The Answer</div><div class="explain-text">${q.explanation}</div></div>`;
+
+  if(q.optionExplains && q.type==='mcq'){
+    html += `<div class="explain-section"><div class="explain-label options-label">🔍 Each Option Explained</div>`;
+    q.optionExplains.forEach((exp,i)=>{
+      const cl = i===q.correct?'oe-correct':'oe-wrong';
+      html += `<div class="opt-explain-item ${cl}"><strong>${['A','B','C','D'][i]}:</strong> ${exp}</div>`;
+    });
+    html += `</div>`;
+  }
+  if(q.wrongPart && q.type==='truefalse'){
+    html += `<div class="explain-section"><div class="explain-label options-label">🔍 The Wrong Part</div><div class="explain-text">${q.wrongPart}</div></div>`;
+  }
+  html += `<div class="explain-section"><div class="explain-label trap">⚠️ Common Trap</div><div class="explain-text">${q.trap}</div></div>`;
+  html += `<div class="explain-section"><div class="explain-label ref">📚 ${q.page} — ${q.topic}</div></div>`;
+  html += `</div>`;
+  box.innerHTML = html;
+  box.classList.add('show');
+}
+
+// ── SCORE ──
+function updateScore(){
+  const done = score.correct + score.wrong;
+  document.getElementById('sc').textContent = score.correct;
+  document.getElementById('sw').textContent = score.wrong;
+  document.getElementById('sq').textContent = done;
+  document.getElementById('ss-c').textContent = score.correct;
+  document.getElementById('ss-w').textContent = score.wrong;
+  document.getElementById('ss-t').textContent = done;
+  document.getElementById('progress-bar').style.width = (done/100*100)+'%';
+}
+
+// ── FILTERS ──
+function applyFilters(){
+  const search = document.getElementById('search-input').value.toLowerCase().trim();
+  const topic = document.getElementById('topic-select').value;
+  const diff = document.getElementById('diff-select').value;
+  const cards = document.querySelectorAll('.q-card');
+  let visible = 0;
+
+  cards.forEach(card=>{
+    const cardTopic = card.getAttribute('data-topic');
+    const cardDiff = card.getAttribute('data-diff');
+    const cardText = card.getAttribute('data-text');
+
+    const topicOk = !topic || cardTopic === topic;
+    const diffOk = !diff || cardDiff === diff;
+    const searchOk = !search || cardText.includes(search);
+
+    if(topicOk && diffOk && searchOk){
+      card.classList.remove('hidden');
+      visible++;
+    } else {
+      card.classList.add('hidden');
+    }
+  });
+
+  const info = document.getElementById('results-info');
+  const empty = document.getElementById('empty-state');
+  if(visible===0){
+    info.style.display='none';
+    empty.style.display='block';
+  } else {
+    info.style.display='block';
+    empty.style.display='none';
+    const total = QUESTIONS.length;
+    info.textContent = visible===total ? `Showing all ${total} questions` : `Showing ${visible} of ${total} questions`;
+  }
+}
+
+function clearFilters(){
+  document.getElementById('search-input').value='';
+  document.getElementById('topic-select').value='';
+  document.getElementById('diff-select').value='';
+  applyFilters();
+}
+
+// ── RESET ALL ──
+function resetAll(){
+  if(!confirm('Reset all answers and scores?')) return;
+  Object.keys(state).forEach(k=>delete state[k]);
+  score = {correct:0, wrong:0};
+  updateScore();
+  renderAll();
+}
+
+// ── START ──
+initTopics();
+renderAll();
+</script>
+</body>
+</html>
